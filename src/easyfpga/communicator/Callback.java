@@ -1,0 +1,30 @@
+/*
+ *  This file is part of easyFPGA.
+ *  Copyright 2013,2014 os-cillation GmbH
+ *
+ *  easyFPGA is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  easyFPGA is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with easyFPGA.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+package easyfpga.communicator;
+
+/**
+ * Implementations of this interfaces will be passed to the asynchronous read register request
+ * method. When the read register reply (containing the value) is received the interface's
+ * callback() method will be called.
+ */
+public interface Callback {
+
+    void callback(Exchange requestReply);
+}

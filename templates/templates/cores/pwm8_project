@@ -1,0 +1,3 @@
+vhdl work "soc/easy_cores/pwm/wb_pwm8.vhd"
+vhdl work "soc/easy_cores/pwm/pwm8.vhd"
+vhdl work "soc/easy_cores/wishbone_slave/wbs_single_reg.vhd"

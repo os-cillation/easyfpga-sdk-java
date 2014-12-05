@@ -1,0 +1,3 @@
+vhdl work "soc/easy_cores/gpio/gpio8.vhd"
+verilog work "soc/easy_cores/gpio/gpio_defines.v"
+verilog work "soc/easy_cores/gpio/gpio_top.v"

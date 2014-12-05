@@ -1,0 +1,2 @@
+vhdl work "soc/easy_cores/wishbone_slave/wbs_single_reg.vhd"
+vhdl work "soc/easy_cores/fdiv/wb_fdiv.vhd"

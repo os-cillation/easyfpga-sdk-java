@@ -1,0 +1,1 @@
+run -ifn xst-project -top %tle_name -ofn tle.ngc -ofmt NGC -p xc6slx9-tqg144-2 -opt_mode Speed -opt_level 2

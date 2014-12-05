@@ -1,0 +1,15 @@
+vhdl work "soc/infrastructure/constants.vhd"
+vhdl work "soc/infrastructure/interfaces.vhd"
+vhdl work "soc/infrastructure/transmit_frame_buffer.vhd"
+vhdl work "soc/infrastructure/receive_frame_buffer.vhd"
+vhdl work "soc/infrastructure/frame_ctrl.vhd"
+vhdl work "soc/infrastructure/fifo_controller.vhd"
+vhdl work "soc/infrastructure/fifo_adapter.vhd"
+vhdl work "soc/infrastructure/enable_controller.vhd"
+vhdl work "soc/infrastructure/soc_bridge.vhd"
+vhdl work "soc/infrastructure/syscon.vhd"
+
+%cores
+
+vhdl work "tle.vhd"
+vhdl work "intercon.vhd"

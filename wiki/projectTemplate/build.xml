@@ -1,0 +1,77 @@
+<project basedir="." default="jar" name="HelloFPGA">
+
+    <property environment="env" />
+    <property name="main-class" value="myEasyFPGAApplication.Hostapplication" />
+    <property name="jarname" value="Application.jar" />
+    <property name="target" value="1.7" />
+    <property name="source" value="1.7" />
+    <property name="bootstrap" location="/usr/lib/jvm/java-7-openjdk/jre/lib/rt.jar" />
+    <property name="src.dir" location="src" />
+    <property name="build.dir" location="bin" />
+    <property name="lib.dir" location="lib" />
+    <property name="dist.dir" location="dist" />
+    <property name="bin.file" location="${user.home}/.easyFPGA/tle.bin" />
+
+    <path id="project.classpath">
+        <pathelement location="${build.dir}" />
+        <fileset dir="${lib.dir}" includes="**/*.jar" />
+    </path>
+
+    <!-- init required directories -->
+    <target name="init">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+
+    <!-- clean -->
+    <target name="clean">
+        <delete dir="${build.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+
+    <!-- build -->
+    <target depends="clean, init" name="build">
+        <echo message="${ant.project.name}: ${ant.file}" />
+        <echo message="Using Java version ${ant.java.version}" />
+
+        <javac  srcdir="${src.dir}"
+                destdir="${build.dir}"
+                includeantruntime="false"
+                classpathref="project.classpath"
+                source="${source}"
+                target="${target}"
+                bootclasspath="${bootstrap}" />
+
+        <copy includeemptydirs="false" todir="${build.dir}">
+            <fileset dir="${src.dir}" />
+        </copy>
+    </target>
+
+    <!-- build FPGA binary -->
+    <target depends="build" name="buildFPGA">
+        <java classname="easyfpga.generator.BinaryBuilder" classpathref="project.classpath" failonerror="true">
+        </java>
+    </target>
+
+    <!--create a deployable jar file (without building FPGA binary) -->
+    <target name="jar" depends="clean, build">
+        <copy file="${bin.file}" todir="${build.dir}" />
+        <jar jarfile="${dist.dir}/${jarname}">
+            <fileset dir="${build.dir}" excludes="**/*.java" />
+            <restrict>
+                <or>
+                    <name name="**/*.class" />
+                    <name name="libs/*" />
+                </or>
+                <archives>
+                    <zips>
+                        <fileset dir="${lib.dir}" includes="**/*.jar" />
+                    </zips>
+                </archives>
+            </restrict>
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}" />
+            </manifest>
+        </jar>
+    </target>
+</project>

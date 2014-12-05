@@ -1,0 +1,3 @@
+vhdl work "soc/easy_cores/spi/spi.vhd"
+verilog work "soc/easy_cores/spi/simple_spi_top.v"
+verilog work "soc/easy_cores/spi/fifo4.v"
