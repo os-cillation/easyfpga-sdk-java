@@ -4,7 +4,7 @@ This article describes the steps to build a simple "HelloFPGA" application inclu
 
 ## Test your Setup
 * Get the project template from [here](projectTemplate/). For this purpose it is most convenient to clone this repository.
-* Get a recent copy of the easyFPGA.jar archive and copy it into the dist directory of the project template
+* Get a recent copy of the [easyFPGA.jar](../dist/easyFPGA.jar) archive from the [dist directory](../dist/). In the template, create a directory named `lib` and move the jar into it.
 * Ensure that Java 7 is your default. This is how you can check your current default Java version:
 
 ```

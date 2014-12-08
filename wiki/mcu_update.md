@@ -14,7 +14,7 @@ The easiest way of loading new firmware to the MCU uses the the installed applic
 
 It is most convenient to use the following script:
 
-```
+```shell
 #!/bin/sh
 # easyFPGA microcontroller update script
 
