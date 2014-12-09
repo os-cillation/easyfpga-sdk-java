@@ -22,9 +22,9 @@ package easyfpga.generator.model.cores;
 import java.util.Arrays;
 
 /**
- * A CAN bus message or frame
+ * A CAN bus frame or message
  */
-public class CANMessage {
+public class CANFrame {
 
     private boolean isExtended;
     private boolean isRemoteTransferRequest;
@@ -34,35 +34,35 @@ public class CANMessage {
     private int dataLength;
 
     /**
-     * Construct basic message carrying data. The data length code is determined by the length of
+     * Construct basic frame carrying data. The data length code is determined by the length of
      * given data.
      *
      * @param identifier a unique 11-bit identifier (0 .. 0x7FF) which indicates the priority
      *         (lower -> higher priority)
      * @param data (up to 8 8-bit integers)
      */
-    public CANMessage(int identifier, int[] data) {
+    public CANFrame(int identifier, int[] data) {
         this(identifier, data, false);
     }
 
     /**
-     * Construct a basic or extended message carrying data. The data length code is determined by
+     * Construct a basic or extended frame carrying data. The data length code is determined by
      * the length of given data.
      *
      * @param identifier a unique identifier. 11 bits (0 .. 0x7FF) for basic-, and 29 bits
-     *         (0 .. 0x1FFFFFFF) for extended messages) which indicates the priority
+     *         (0 .. 0x1FFFFFFF) for extended frames) which indicates the priority
      *         (lower -> higher priority)
      * @param data (up to 8 8-bit integers)
      * @param isExtended true, if an extended frame should be constructed
      */
-    public CANMessage(int identifier, int[] data, boolean isExtended) {
+    public CANFrame(int identifier, int[] data, boolean isExtended) {
 
         /* parameter check */
         if (isExtended == false && (identifier < 0 || identifier > 0x7FF)) {
-            throw new IllegalArgumentException("Illegal identifier for basic message");
+            throw new IllegalArgumentException("Illegal identifier for basic CAN frame");
         }
         if (isExtended == true && (identifier < 0 || identifier > 0x1FFFFFFF)) {
-            throw new IllegalArgumentException("Illegal identifier for extended message");
+            throw new IllegalArgumentException("Illegal identifier for extended CAN frame");
         }
         if (data.length < 1 || data.length > 8) {
             throw new IllegalArgumentException("Illegal data length: " + data.length);
@@ -86,24 +86,24 @@ public class CANMessage {
     }
 
     /**
-     * Construct remote transmission request message in basic format
+     * Construct remote transmission request frame in basic format
      *
      * @param identifier a unique identifier (0 .. 0x7FF) which indicates the priority
      *         (lower -> higher priority)
      */
-    public CANMessage(int identifier) {
+    public CANFrame(int identifier) {
         this(identifier, false);
     }
 
     /**
-     * Construct remote transmission request message, either basic or extended format
+     * Construct remote transmission request frame, either basic or extended format
      *
      * @param identifier a unique identifier. 11 bits (0 .. 0x7FF) for basic-, and 29 bits
-     *         (0 .. 0x1FFFFFFF) for extended messages) which indicates the priority
+     *         (0 .. 0x1FFFFFFF) for extended frames) which indicates the priority
      *         (lower -> higher priority)
      * @param isExtended true, if an extended frame should be constructed
      */
-    public CANMessage(int identifier, boolean isExtended) {
+    public CANFrame(int identifier, boolean isExtended) {
 
         /* parameter check */
         if (!isExtended && (identifier < 0 || identifier > 0x7FF)) {
@@ -149,6 +149,7 @@ public class CANMessage {
 
     /**
      * Get the data bytes
+     *
      * @return up to 8 8-bit integers containing the data
      */
     public int[] getData() {
@@ -156,24 +157,42 @@ public class CANMessage {
     }
 
     /**
+     * Get the frame identifier
+     *
+     * @return Frame identifier. 29 bits for extended- and 11 bits for basic frames.
+     */
+    public int getIdentifier() {
+        return identifier;
+    }
+
+    /**
      * Get the descriptor bytes containing the identifier, data length code and remote transfer
      * request bit.
-     * @return two (or four for extended messages) 8-bit integers containing the descriptor
+     *
+     * @return two (or four for extended frames) 8-bit integers containing the descriptor
      */
     public int[] getDescriptor() {
         return descriptor;
     }
 
     /**
-     * @return True, if the message is in extended CAN message format
+     * @return True if frame is in extended frame format
      */
     public boolean isExtended() {
         return isExtended;
     }
 
     /**
+     * @return True if frame is remote transfer request
+     */
+    public boolean isRTR() {
+        return isRemoteTransferRequest;
+    }
+
+    /**
      * Get the frame information byte containing data length code, RTR bit and frame
      * format information
+     *
      * @return 8-bit frame information integer
      */
     public int getFrameInformation() {
@@ -184,7 +203,8 @@ public class CANMessage {
     }
 
     /**
-     * Get the data length or zero for remote transmission request messages
+     * Get the data length or zero for remote transmission request frames
+     *
      * @return data length
      */
     public int getDataLength() {
@@ -223,7 +243,7 @@ public class CANMessage {
         }
 
         /* data */
-        if (dataLength == 0) sb.append("RTR message - no data");
+        if (dataLength == 0) sb.append("RTR frame - no data");
         for (int i = 0; i < dataLength; i++) {
             sb.append("      Data " + (i+1) + ": 0x" + String.format("%02X", data[i]) + "\n");
         }
@@ -252,7 +272,7 @@ public class CANMessage {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        CANMessage other = (CANMessage) obj;
+        CANFrame other = (CANFrame) obj;
         if (!Arrays.equals(data, other.data))
             return false;
         if (dataLength != other.dataLength)

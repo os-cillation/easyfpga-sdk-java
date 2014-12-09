@@ -39,9 +39,9 @@ import easyfpga.generator.model.Pin.Type;
  * purchase of  a CAN protocol license is mandatory.<br><br>
  *
  * <b>Known issues:</b><br>
- * - When in basic CAN mode, the reception of an extended message generates - if enabled - a
+ * - When in basic CAN mode, the reception of an extended frame generates - if enabled - a
  *   receive interrupt. This behavior differs from the SJA1000 specification. Therefore it is
- *   recommended to operate the core in extended (PeliCAN) mode.
+ *   recommended to operate the core in extended mode.
  *
  * @see <a href="http://opencores.org/project,can">http://opencores.org/project,can</a>
  *
@@ -63,7 +63,7 @@ public class CAN extends Core {
     private final long RESET_TIMEOUT_MILLIS = 3000;
 
     public final class PIN {
-        /** receive data input*/
+        /** receive data input */
         public static final String RX = "can_rx_in";
         /** transmit data output */
         public static final String TX = "can_tx_out";
@@ -101,13 +101,6 @@ public class CAN extends Core {
 
         /** Bus timing register 1. R/W only in reset mode. */
         public static final int BUS_TIMING_1 = 7;
-
-        /* Output control register. R/W only in reset mode.
-         * public static final int OUTPUT_CONTROL = 8;
-         *
-         * not available!
-         */
-
 
         /*
          * Segment: Transmit buffer
@@ -198,7 +191,7 @@ public class CAN extends Core {
     }
 
     /**
-     * Register addresses for operation in extended mode (PeliCAN)
+     * Register addresses for operation in extended mode
      */
     public final class REG_EXT {
         /** Mode register. (R/W) */
@@ -314,7 +307,7 @@ public class CAN extends Core {
         /** EFF: Read: RX data 8; Write: TX data 8 */
         public static final int DATA_10 = 28;
 
-        /** RX message counter. Read only. */
+        /** RX frame counter. Read only. */
         public static final int RX_MESSAGE_COUNTER = 29;
 
         /** RX buffer start address. Writable in reset mode */
@@ -354,7 +347,7 @@ public class CAN extends Core {
         public static final int WAKE_UP = 0x10;
 
         /**
-         * Data overrun interrupt. An incoming message has been lost due receive buffer overrun.
+         * Data overrun interrupt. An incoming frame has been lost due receive buffer overrun.
          */
         public static final int DATA_OVERRUN = 0x08;
 
@@ -378,13 +371,14 @@ public class CAN extends Core {
     /** 1 Mbit/s */
     public static final int BITRATE_1M = 4;
     /** 250 kBit/s */
-    public static final int BITRATE_250k = 16;
+    public static final int BITRATE_250K = 16;
     /** 125 kBit/s */
-    public static final int BITRATE_125k = 32;
+    public static final int BITRATE_125K = 32;
 
     /**
      * Initialize the core in CAN-basic mode
-     * @param bitrate use one of the bitrate constants, i.e. CAN.BITRATE_250k
+     *
+     * @param bitrate use one of the bitrate constants, i.e. CAN.BITRATE_250K
      * @throws CommunicationException
      */
     public void init(int bitrate) throws CommunicationException {
@@ -393,13 +387,14 @@ public class CAN extends Core {
 
     /**
      * Initialize the core with mode selection
-     * @param bitrate use one of the bitrate constants, i.e. CAN.BITRATE_250k
-     * @param extendedMode if true, the extended mode (PeliCAN) is used
+     *
+     * @param bitrate use one of the bitrate constants, i.e. CAN.BITRATE_250K
+     * @param extendedMode if true, the extended mode is used
      * @throws CommunicationException
      */
     public void init(int bitrate, boolean extendedMode) throws CommunicationException {
         /* parameter check */
-        if (bitrate != BITRATE_125k && bitrate != BITRATE_250k && bitrate != BITRATE_1M) {
+        if (bitrate != BITRATE_125K && bitrate != BITRATE_250K && bitrate != BITRATE_1M) {
             throw new IllegalArgumentException("Invalid bitrate. Please use bitrate constants!");
         }
 
@@ -413,7 +408,7 @@ public class CAN extends Core {
         /* possible default timing */
         setBusTiming(bitrate, 2, false, 5, 2);
 
-        /* set single-filter message filtering in extended mode*/
+        /* set single-filter frame filtering in extended mode*/
         if (extendedMode) {
             regCtrlMode.changeBit(3, true);
         }
@@ -487,12 +482,13 @@ public class CAN extends Core {
     }
 
     /**
-     * Transmit a CAN message
-     * @param message message object that has to be constructed before
+     * Transmit a CAN frame
+     *
+     * @param frame frame object that has to be constructed before
      * @throws CommunicationException
      * @throws CANException on timeout
      */
-    public void transmit(CANMessage message) throws CommunicationException, CANException {
+    public void transmit(CANFrame frame) throws CommunicationException, CANException {
         long startMillis = System.currentTimeMillis();
         while (transmitBufferLocked()) {
             if ((System.currentTimeMillis() - startMillis) >= TRANSMIT_TIMEOUT_MILLIS) {
@@ -500,9 +496,8 @@ public class CAN extends Core {
                                          TRANSMIT_TIMEOUT_MILLIS + " ms");
             }
         }
-        writeTransmitBuffer(message);
+        writeTransmitBuffer(frame);
         requestTransmission();
-        //while (transmissionInProgress());
     }
 
     private boolean transmitBufferLocked() throws CommunicationException {
@@ -511,22 +506,22 @@ public class CAN extends Core {
         else return true;
     }
 
-    private void writeTransmitBuffer(CANMessage message) throws CommunicationException {
-        int[] desc = message.getDescriptor();
-        int[] data = message.getData();
-        int length = message.getDataLength();
+    private void writeTransmitBuffer(CANFrame frame) throws CommunicationException {
+        int[] desc = frame.getDescriptor();
+        int[] data = frame.getData();
+        int length = frame.getDataLength();
 
-        /* extended message, core in basic mode */
-        if (message.isExtended() && !this.extendedMode) {
+        /* extended frame, core in basic mode */
+        if (frame.isExtended() && !this.extendedMode) {
             throw new IllegalStateException("Core is in basic CAN mode and cannot transmit "
-                        + "extended messages.");
+                        + "extended frames.");
         }
 
-        /* extended message, core in extended mode */
-        else if (message.isExtended() && this.extendedMode) {
+        /* extended frame, core in extended mode */
+        else if (frame.isExtended() && this.extendedMode) {
             /* prepare array for AAI write */
             int[] writeData = new int[length + 5];
-            writeData[0] = message.getFrameInformation();
+            writeData[0] = frame.getFrameInformation();
             writeData[1] = desc[0];
             writeData[2] = desc[1];
             writeData[3] = desc[2];
@@ -539,11 +534,11 @@ public class CAN extends Core {
             wrRegisterAAI(REG_EXT.FRAME_INFORMATION, writeData);
         }
 
-        /* basic message, core in extended mode */
-        else if (!message.isExtended() && this.extendedMode) {
+        /* basic frame, core in extended mode */
+        else if (!frame.isExtended() && this.extendedMode) {
             /* prepare array for AAI write */
             int[] writeData = new int[length + 3];
-            writeData[0] = message.getFrameInformation();
+            writeData[0] = frame.getFrameInformation();
             writeData[1] = desc[0];
             writeData[2] = desc[1];
             for (int i=0; i < length; i++) {
@@ -554,7 +549,7 @@ public class CAN extends Core {
             wrRegisterAAI(REG_EXT.FRAME_INFORMATION, writeData);
         }
 
-        /* basic message, core in basic mode */
+        /* basic frame, core in basic mode */
         else {
             /* prepare array for AAI write */
             int[] writeData = new int[length + 2];
@@ -570,15 +565,16 @@ public class CAN extends Core {
     }
 
     /**
-     * Get a message that has been received
-     * @return The message in the receive buffer or null if empty
+     * Get a frame that has been received
+     *
+     * @return The frame in the receive buffer or null if empty
      * @throws CommunicationException
      */
-    public CANMessage getReceivedMessage() throws CommunicationException {
+    public CANFrame getReceivedFrame() throws CommunicationException {
         int identifier;
         int[] data;
         int[] regData = new int[15];
-        CANMessage received;
+        CANFrame received;
 
         /* read status with single read */
         RegisterReadCallback statusCallback = new RegisterReadCallback(1);
@@ -609,7 +605,7 @@ public class CAN extends Core {
 
             /* if remote transmission request */
             if ((identifier2 & 0x10) != 0) {
-                received = new CANMessage(identifier);
+                received = new CANFrame(identifier);
             }
             else {
                 /* determine data length and read data */
@@ -621,7 +617,7 @@ public class CAN extends Core {
                 for (int i = 0; i < dataLength; i++) {
                     data[i] = regData[7+i];
                 }
-                received = new CANMessage(identifier, data);
+                received = new CANFrame(identifier, data);
             }
         }
         /* core is in extended mode */
@@ -631,7 +627,7 @@ public class CAN extends Core {
             int identifier1 = regData[2];
             int identifier2 = regData[3];
 
-            /* received message is EFF */
+            /* received extended frame format */
             if ((frameInformation & 0x80) != 0) {
                 int identifier3 = regData[4];
                 int identifier4 = regData[5];
@@ -640,7 +636,7 @@ public class CAN extends Core {
 
                 /* if RTR */
                 if ((frameInformation & 0x40) != 0) {
-                    received = new CANMessage(identifier, true);
+                    received = new CANFrame(identifier, true);
                 }
                 /* if data transmission */
                 else {
@@ -648,16 +644,16 @@ public class CAN extends Core {
                     for (int i = 0; i < dataLength; i++) {
                         data[i] = regData[6+i];
                     }
-                    received = new CANMessage(identifier, data, true);
+                    received = new CANFrame(identifier, data, true);
                 }
             }
-            /* received message is SFF */
+            /* received basic frame format */
             else {
                 identifier = identifier1 << 3 | (identifier2 & 0xE0) >>> 5;
 
                 /* if RTR */
                 if ((frameInformation & 0x40) != 0) {
-                    received = new CANMessage(identifier);
+                    received = new CANFrame(identifier);
                 }
                 /* if data transmission */
                 else {
@@ -665,7 +661,7 @@ public class CAN extends Core {
                     for (int i = 0; i < dataLength; i++) {
                         data[i] = regData[4+i];
                     }
-                    received = new CANMessage(identifier, data);
+                    received = new CANFrame(identifier, data);
                 }
             }
         }
@@ -716,6 +712,7 @@ public class CAN extends Core {
 
     /**
      * Enter sleep mode if no interrupt is pending and there is no bus activity
+     *
      * @throws CommunicationException
      */
     public void goToSleep() throws CommunicationException {
@@ -729,6 +726,7 @@ public class CAN extends Core {
 
     /**
      * Wake up: Exit sleep mode and continue operation
+     *
      * @throws CommunicationException
      */
     public void wakeUp() throws CommunicationException {
@@ -742,14 +740,12 @@ public class CAN extends Core {
 
     /* END Command-Register related methods */
 
-    /* Message filtering related methods */
-    // TODO: Dual filter mode (extended)
-    // TODO: Add RTR bit to acceptance code
+    /* Frame filtering related methods */
 
     /**
      * Configure the core's acceptance code that - in conjunction with the acceptance mask -
-     * filters messages before being stored in the receive buffer. In basic mode, the eight most
-     * significant bits of the message's identifier must equal the acceptance code for acceptance.
+     * filters frames before being stored in the receive buffer. In basic mode, the eight most
+     * significant bits of the frame's identifier must equal the acceptance code for acceptance.
      *
      * @param acceptanceCode in CAN basic mode, the eight most significant bits (0 .. 0xFF), in
      *                        extended mode the entire 29 bit identifier (0 .. 0x1FFFFFFF)
@@ -773,7 +769,6 @@ public class CAN extends Core {
             writeRegister(REG.ACCEPTANCE_CODE, acceptanceCode);
         }
         /* if the core is in extended mode */
-        /* this setup if for receiving extended messages with a single filter configuration*/
         else {
             /* parameter check */
             if (acceptanceCode < 0 || acceptanceCode > 0x1FFFFFFF) {
@@ -842,7 +837,7 @@ public class CAN extends Core {
         }
     }
 
-    /* END message filtering related methods */
+    /* END frame filtering related methods */
 
     /* Interrupt related methods */
 
@@ -865,6 +860,7 @@ public class CAN extends Core {
 
     /**
      * Enable or disable a certain type of interrupt
+     *
      * @param interruptType an interrupt identification integer (i.e. CAN.INT.ERROR)
      * @param enable True: enable interrupt, False: disable interrupt
      * @throws CommunicationException

@@ -13,7 +13,7 @@ A versatile GPIO core with 8 pins that can either be used as in- or outputs. Inp
 * **GPIO7** : General purpose I/O 7
 
 ## Usage
-When defining an FPGA using the GPIO8 core, note that its pins can only connected to FPGA GPIOs. This is due to the fact that the pins are capable of changing from sink (input) to source (output) and vice-versa.
+When defining an FPGA using the GPIO8 core, note that its pins can only be connected to FPGA GPIOs. This is due to the fact that the pins are capable of changing from sink (input) to source (output) and vice-versa.
 
 ### Method summary
 For more detailed information please refer to the javadoc in the [dist directory](../../dist/).

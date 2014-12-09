@@ -20,7 +20,7 @@
 package easyfpga.generator.model.cores;
 
 import easyfpga.communicator.RegisterReadCallback;
-import easyfpga.exceptions.CommunicationException;
+import easyfpga.exceptions.*;
 import easyfpga.generator.model.Core;
 import easyfpga.generator.model.Pin;
 import easyfpga.generator.model.Pin.Type;
@@ -30,7 +30,7 @@ import easyfpga.generator.model.Pin.Type;
  */
 public class SPI extends Core {
 
-    /* stores how many bytes have been transmitted without reading the rx register */
+    /** stores how many bytes have been transmitted without reading the RX register */
     private int transmitOnly = 0;
 
     /* registers that do not change their values by themselves */
@@ -76,29 +76,29 @@ public class SPI extends Core {
      */
 
     /** SCK = 40 MHz */
-    public static final int SCK_40_MHz = 2;
+    public static final int SCK_40_MHZ = 2;
     /** SCK = 20 MHz */
-    public static final int SCK_20_MHz = 4;
+    public static final int SCK_20_MHZ = 4;
     /** SCK = 10 MHz */
-    public static final int SCK_10_MHz = 8;
+    public static final int SCK_10_MHZ = 8;
     /** SCK = 5 MHz */
-    public static final int SCK_5_MHz = 16;
+    public static final int SCK_5_MHZ = 16;
     /** SCK = 2.5 MHz */
-    public static final int SCK_2500_kHz = 32;
+    public static final int SCK_2500_KHZ = 32;
     /** SCK = 1.25 MHz */
-    public static final int SCK_1250_kHz = 64;
+    public static final int SCK_1250_KHZ = 64;
     /** SCK = 625 kHz */
-    public static final int SCK_625_kHz = 128;
+    public static final int SCK_625_KHZ = 128;
 
     /* for the sake of completeness ... */
-    public static final int SCK_312500_Hz = 256;
-    public static final int SCK_156250_Hz = 512;
-    public static final int SCK_78125_Hz = 1024;
-    public static final int SCK_39063_Hz = 2048;
-    public static final int SCK_19531_Hz = 4096;
+    public static final int SCK_312500_HZ = 256;
+    public static final int SCK_156250_HZ = 512;
+    public static final int SCK_78125_HZ = 1024;
+    public static final int SCK_39063_HZ = 2048;
+    public static final int SCK_19531_HZ = 4096;
 
     /*
-     * spi mode constants
+     * SPI mode constants
      */
     /** SPI mode 0: CPOL = 0, CPHA = 0 */
     public static final int MODE_0 = 0;
@@ -110,7 +110,7 @@ public class SPI extends Core {
     public static final int MODE_3 = 3;
 
     /**
-     * Initialize and enable spi core. Clear both FIFOs.
+     * Initialize and enable SPI core. Clears both FIFOs.
      *
      * @param mode
      * Mode 0: CPOL=0, CPHA=0;
@@ -130,6 +130,7 @@ public class SPI extends Core {
 
     /**
      * Transmit and receive a single byte
+     *
      * @param data to be transmitted over the MOSI line
      * @return The data received over the MISO line
      * @throws CommunicationException
@@ -149,28 +150,28 @@ public class SPI extends Core {
             }
         }
 
-        /* receive fifo is now aligned */
+        /* receive FIFO is now aligned */
         transmitOnly = 0;
 
         /* transmit */
         writeRegister(REG.SPDR, data);
 
-        //TODO: async
-        /* wait until read fifo is not empty anymore */
+        /* wait until read FIFO is not empty anymore */
         int spsr;
         while (true) {
             spsr = readRegister(REG.SPSR);
             if ((spsr & 0x01) == 0) break;
         }
-        /* read rx fifo */
-        int received = readRegister(REG.SPDR);
 
+        /* read RX FIFO */
+        int received = readRegister(REG.SPDR);
         return received;
     }
 
     /**
      * SPI transmission-only method. Faster than the transceive method, but the received
      * bytes will be lost.
+     *
      * @param data to be transmitted over the MOSI line
      * @throws CommunicationException
      */
@@ -187,6 +188,7 @@ public class SPI extends Core {
 
     /**
      * Transmit dummy byte (0x00) and receive data
+     *
      * @return Received data
      * @throws CommunicationException
      */
@@ -195,7 +197,8 @@ public class SPI extends Core {
     }
 
     /**
-     * Reset the receive and transmit fifo buffers
+     * Reset the receive and transmit FIFO buffers
+     *
      * @throws CommunicationException
      */
     public void resetBuffers() throws CommunicationException {
@@ -204,8 +207,7 @@ public class SPI extends Core {
     }
 
     /**
-     * Enable or disable the core.
-     * When disabled, the core will not transfer data.
+     * Enable or disable the core. When disabled, the core will not transfer data.
      *
      * @param enable
      * @throws CommunicationException

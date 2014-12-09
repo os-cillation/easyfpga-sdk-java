@@ -20,7 +20,7 @@
 package easyfpga.generator.model.cores;
 
 import easyfpga.communicator.RegisterReadCallback;
-import easyfpga.exceptions.CommunicationException;
+import easyfpga.exceptions.*;
 import easyfpga.generator.model.Core;
 import easyfpga.generator.model.Pin;
 import easyfpga.generator.model.Pin.Type;
@@ -34,9 +34,6 @@ public class I2CMaster extends Core {
     private BufferedRegister regPrescalerHi = new BufferedRegister(REG.PRER_H);
     private BufferedRegister regControl = new BufferedRegister(REG.CTRL);
 
-    /*
-     * i2c transmission speed modes
-     */
     /** standard mode, SCL: 90 kHz */
     public static final int MODE_STANDARD = 100000;
     /** fast mode, SCL: 350 kHz */
@@ -45,7 +42,13 @@ public class I2CMaster extends Core {
     private final long TRANSMISSION_DURATION_MAX_MILLIS = 3000;
 
     public final class PIN {
+        /**
+         * Bidirectional I2C data pin
+         */
         public static final String SDA = "i2c_sda_io";
+        /**
+         * Bidirectional I2C clock pin
+         */
         public static final String SCL = "i2c_scl_io";
     }
 
@@ -82,6 +85,7 @@ public class I2CMaster extends Core {
 
     /**
      * Initialize the I2C master core and set a certain transmission speed
+     *
      * @param speed Transmission speed. The following modes are available:<br>
      * 	MODE_STANDARD ( < 100 kbit/s)<br>
      * 	MODE_FAST ( < 400 kbit/s)
@@ -99,6 +103,7 @@ public class I2CMaster extends Core {
 
     /**
      * Initialize with standard transmission speed
+     *
      * @throws CommunicationException
      */
     public void init() throws CommunicationException {
@@ -107,29 +112,30 @@ public class I2CMaster extends Core {
 
     /**
      * Generic transfer method
+     *
      * @param data 8 bits of data, or 7 bit slave address with R/W bit (LSB)
-     * @param transmit has to be true when transmitting data
+     * @param write true when writing data to a slave, false when reading
      * @param start if true, assert start condition before transmission. If false, assert stop
      * condition after transmission. Set to null for transmission in between.
      * @param nack if true send nack after receiving (write = false)
-     * @return read value when a receiver (write = false), else 1 if ack received or 0 if nack
+     * @return read value when a receiver (write = false), else 1 if ACK received or 0 if NACK
      * received after transmitting data (write = true)
      * @throws CommunicationException
      */
-    public int transfer(int data, boolean transmit, Boolean start, boolean nack)
+    public int transfer(int data, boolean write, Boolean start, boolean nack)
             throws CommunicationException {
 
         int command = 0;
         /* check data */
         if (data < 0 || data > 0xff) {
-            throw new IllegalArgumentException("data out of range (0x00 .. 0xff)");
+            throw new IllegalArgumentException("Data out of range (0 .. 255)");
         }
 
-        /* when transmitting data, write data/address+wr-bit to tx register */
-        if (transmit) writeRegister(REG.TXR, data);
+        /* when writing, write data/address + WR-bit to TX register */
+        if (write) writeRegister(REG.TXR, data);
 
         /* WR, RD */
-        if (transmit) command |= (1 << 4);
+        if (write) command |= (1 << 4);
         else command |= (1 << 5);
 
         /* STA, STO */
@@ -139,8 +145,8 @@ public class I2CMaster extends Core {
         }
 
         /* ACK, NACK */
-        if (transmit && nack) {
-            throw new IllegalArgumentException("nack can only be asserted in read transmissions");
+        if (write && nack) {
+            throw new IllegalArgumentException("Nack can only be asserted in read transmissions");
         }
         else if (nack) {
             command |= (1 << 3);
@@ -159,13 +165,13 @@ public class I2CMaster extends Core {
             }
         }
 
-        /* asynchrounously read status and receive register*/
+        /* asynchronously read status and receive register */
         RegisterReadCallback callback = new RegisterReadCallback(2);
         rdRegisterAsync(REG.SR, callback);
-        rdRegisterAsync(REG.RXR, callback); // TODO: Does this influences register?
+        rdRegisterAsync(REG.RXR, callback);
 
-        if (transmit) {
-            /* return pseudo-boolean representation of ack bit if write transmission */
+        if (write) {
+            /* return pseudo-boolean representation of ACK bit if write transmission */
             int status = callback.getData(0);
             if ((status & 0x80) != 0) return 0;
             else return 1;
@@ -177,14 +183,16 @@ public class I2CMaster extends Core {
     }
 
     /**
-     * Typical single byte read operation. Tested with MMA7455 acceleration sensor.
+     * Typical single byte read operation
+     *
      * @param deviceAddress 7 bit device address
      * @param registerAddress 8 bit register address
      * @return the received data, i.e. a register's content
      * @throws CommunicationException
+     * @throws I2CException
      */
     public int readByte(int deviceAddress, int registerAddress)
-            throws CommunicationException {
+            throws CommunicationException, I2CException {
 
         int ack0, ack1, ack2;
 
@@ -205,26 +213,28 @@ public class I2CMaster extends Core {
         /* transmit slave address. Repeated start condition, R/W-Bit: 1 */
         ack2 = transfer((deviceAddress << 1) | 0x01 , true, true, false);
 
-        /* receive register content. Stop condition, send NAK */
+        /* receive register content. Stop condition, send NACK */
         int data = transfer(0x00, false, false, true);
 
         /* check acknowledge bits */
         if (ack0 != 1 || ack1 != 1 || ack2 != 1) {
-            throw new CommunicationException("Error during read byte operation");
+            throw new I2CException("NACK during read byte operation");
         }
 
         return data;
     }
 
     /**
-     * Typical single byte write operation. Tested with MMA7455 acceleration sensor.
+     * Typical single byte write operation
+     *
      * @param deviceAddress 7 bit device address
      * @param registerAddress 8 bit register address
      * @param data to be transmitted, i.e. written to a register
      * @throws CommunicationException
+     * @throws I2CException
      */
     public void writeByte(int deviceAddress, int registerAddress, int data)
-            throws CommunicationException {
+            throws CommunicationException, I2CException {
 
         int ack0, ack1, ack2;
 
@@ -247,12 +257,13 @@ public class I2CMaster extends Core {
 
         /* check acknowledge bits */
         if (ack0 != 1 || ack1 != 1 || ack2 != 1) {
-            throw new CommunicationException("Error during write byte operation");
+            throw new I2CException("NACK during write byte operation");
         }
     }
 
     /**
-     * Checks whether the core is enabled
+     * Check whether the core is enabled
+     *
      * @return
      * @throws CommunicationException
      */
@@ -262,6 +273,7 @@ public class I2CMaster extends Core {
 
     /**
      * Enable the core
+     *
      * @throws CommunicationException
      */
     private void enable() throws CommunicationException {
@@ -270,6 +282,7 @@ public class I2CMaster extends Core {
 
     /**
      * Setup the prescaler registers for a certain SCL frequency
+     *
      * @param sclFrequency 100000 or 400000
      * @throws CommunicationException
      */
@@ -298,6 +311,7 @@ public class I2CMaster extends Core {
 
     /**
      * Returns the TIP (Transmission In Progress) bit
+     *
      * @return
      * @throws CommunicationException
      */

@@ -23,6 +23,7 @@ Welcome to the easyFPGA wiki! Here you will find all information required to get
 * [PWM16](cores/pwm16.md)
 * [GPIO8](cores/gpio8.md)
 * [UART](cores/uart.md)
+* [MIDI](cores/midi.md)
 * [SPI Master](cores/spi.md)
 * [I2C Master](cores/i2c.md)
 * [CAN Wrapper](cores/can.md)

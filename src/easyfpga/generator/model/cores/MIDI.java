@@ -102,7 +102,8 @@ public class MIDI extends Core {
     }
 
     /**
-     * Initialize the MIDI core. Must be called before the core can be used
+     * Initialize the MIDI core. Has to be called before the core can be used
+     *
      * @throws CommunicationException
      */
     public void init() throws CommunicationException {
@@ -154,7 +155,7 @@ public class MIDI extends Core {
     /**
      * Get a received MIDI message
      *
-     * @return the oldest received message as MIDIMessage object
+     * @return the oldest received message as MIDIMessage object or null if receiver is empty
      * @throws CommunicationException
      */
     public MIDIMessage receive() throws CommunicationException {
@@ -164,8 +165,11 @@ public class MIDI extends Core {
         /* get 2 bytes */
         int[] rx2 = rdRegister(REG.RX, 2);
 
-        /* determine length */
+        /* determine type */
         MessageType type = MessageType.fromInteger(rx2[0]);
+        if (type == null) return null;
+
+        /* determine length */
         length = type.getLength();
 
         /* 2-byte messages */
@@ -183,6 +187,7 @@ public class MIDI extends Core {
 
     /**
      * Enable interrupt on MIDI message reception
+     *
      * @throws CommunicationException
      */
     public void enableInterrupt() throws CommunicationException {

@@ -72,7 +72,7 @@ public class MIDIMessage {
      * @param channel the MIDI channel (1 .. 16)
      * @param data depending on message type.<br>
      *         For PROGRAM_CHANGE messages: Patch number (0 .. 127).<br>
-     *         For CHANNEL_PRESSURE messages: The greatest preasure value (0 .. 127).<br>
+     *         For CHANNEL_PRESSURE messages: The greatest pressure value (0 .. 127).<br>
      *         For PITCH_BEND_CHANGE messages: 14-bit change information (0 .. 0x4000), whereas
      *         0x2000 represents no change.
      */
@@ -349,8 +349,9 @@ public class MIDIMessage {
 
         /**
          * Get a MessageType from the first byte of a message
+         *
          * @param status int with a messages first byte
-         * @return MessageType
+         * @return MessageType or null if first byte is unknown
          */
         public static MessageType fromInteger(int status) {
 
@@ -360,9 +361,7 @@ public class MIDIMessage {
                     return msgType;
                 }
             }
-            throw new IllegalArgumentException(
-                    String.format("Unkown midi message first byte 0x%02X", status));
-
+            return null;
         }
     }
 
