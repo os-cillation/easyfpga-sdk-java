@@ -50,4 +50,4 @@ int receive()
 int transceive(int data)
 ```
 
-SPI generally operates in full-duplex mode, with each clock cycle one bit is transfered from master to slave over the MOSI line and one from slave to master on the MISO line. In case only one direction is of interrest, the method `transmit()` or `receive()` should be used. In order to transmit and receive at the same time, use the `transceive()` method.
+SPI generally operates in full-duplex mode: With each clock cycle one bit is transfered from master to slave over the MOSI line and one from slave to master on the MISO line. In case only one direction is of interrest, the method `transmit()` or `receive()` should be used. In order to transmit and receive at the same time, use the `transceive()` method. Since SPI communication usually works byte-wise, all method take and return 8-bit integers (0 .. 255).

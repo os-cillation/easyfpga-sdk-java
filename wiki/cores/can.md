@@ -1,13 +1,13 @@
 # CAN Wrapper
-A wrapper for including a CAN-Bus controller. Due to the patents owned by Bosch, the sources of this core are not deployed with the easyFPGA SDK. The sources can be downloaded at [opencores.org](http://opencores.org). Note that for commercial use, the purchase of a CAN protocol license is required.
+A wrapper for including a CAN-Bus controller. Due to the patents owned by Bosch, the sources of this core are not included in the easyFPGA SDK. The sources have to be downloaded at [opencores.org](http://opencores.org). Note that for commercial use, the purchase of a CAN protocol license is required.
 
 ## Setup
 
 1. Create an account and login at [opencores.org](http://opencores.org)
-2. Navigate to the can controller's project page (projects -> communication controller -> can protocol controller)
+2. Navigate to the can controllers project page (projects -> communication controller -> can protocol controller)
 3. Download the cores RTL written in Verilog
 4. Extract the archive to an arbitrary directory
-5. Set the `CAN_SOURCES` entry in your [configuration file](../configuration.md) to this directory
+5. Set the `CAN_SOURCES` entry in your [configuration file](../configuration.md) to the directory containing the Verilog sources
 
 You should now be able to use the can controller.
 
@@ -23,7 +23,7 @@ The frames are represented by instances of the `CANFrame` class. The CAN core su
 
 #### Construction
 ##### Basic Frame Format
-The construction of frames containing data in the basic frame format is done by means of the following contructor:
+The construction of frames containing data in the basic frame format is done by means of the following constructor:
 
 ```java
 CANFrame(int identifier, int[] data)
@@ -57,6 +57,8 @@ int getIdentifier()
 int[] getData()
 ```
 
+The `isRTR()` method returns true if a `CANFrame` is a remote transfer request carrying no data. The frame format can be determined using the `isExtended()` method. The other methods return the actual frame content.
+
 ### Initialization
 In order to initialize the core, call the
 
@@ -70,7 +72,7 @@ method setting the mode of the core and passing one of the bitrate constants:
 * **CAN.BITRATE_250K** : 250 kBit/s
 * **CAN.BITRATE_125K** : 125 kBit/s
 
-When the core should be able to transmit frames in the extended format, it has to be initialized in extended mode.
+When the core should be able to transmit frames in the extended format, it has to be initialized in extended mode by passing `true` to the second parameter.
 
 ### Frame Filtering
 The CAN controller is capable of filtering frames by means of their identifiers. Frames that are filtered will not be stored in the receive buffer and will not cause any interrupts. The filter is configured using acceptance code and acceptance mask which can be set using the following methods:
@@ -80,9 +82,9 @@ void setAcceptanceCode(int acceptanceCode)
 void setAcceptanceMask(int acceptanceMask)
 ```
 
-The acceptance mask defines which bits of the acceptance code (or identifier) should be compared to the identifier of incoming frames. The bits that are set (1) in the mask are not used for filtering.
+The acceptance mask defines which bits of the acceptance code (or identifier) should be compared to the identifier of an incoming frame. The bits that are set (`1`) in the mask are not used for filtering.
 
-In basic mode, the filtering takes the eight most significant bits of the identifier into account. In extended mode, the entire 29-bit identifier can be used for filtering.
+In basic mode, only the eight most significant bits of the 11-bit identifier are compared for filtering. In extended mode, the entire 29-bit identifier is taken into account.
 
 ### Communication
 After constructing a frame, it can be transmitted using the
@@ -104,9 +106,9 @@ which will return a `CANFrame` instance or null in case there is no frame in the
 ### Interrupts
 These are the most important types of interrupts supported by the core:
 
-* **CAN.INT.RECEIVE** : A frame has been received
-* **CAN.INT.TRANSMIT** : A transmission has been completed
-* **CAN.INT.DATA_OVERRUN** : An incoming frame has been lost due to a receive buffer overrun
+* **RECEIVE** : A frame has been received
+* **TRANSMIT** : A transmission has been completed
+* **DATA_OVERRUN** : An incoming frame has been lost due to a receive buffer overrun
 
 In order to enable or disable a certain interrupt type, call the method
 
@@ -120,11 +122,14 @@ giving one of the interrupt type constants. After the core has issued an interru
 int identifyInterrupt()
 ```
 
-can be used to determine which kind of interrupt is pending. Note that in case of multiple pending interrupts this method will return the sum of multiple interrupt constants. Thus, the interpretation should look the following:
+is used to determine the type of pending interrupt. Note that in case of multiple pending interrupts this method will return the sum of multiple interrupt constants. Thus, the interpretation of the returned values looks as follows:
 
 ```java
 int interrupts = myCANCore.identifyInterrupt();
-if (interrupts && CAN.INT.DATA_OVERRUN) {
+if (interrupts & CAN.INT.DATA_OVERRUN) {
     // Handle data overrun interrupt
+}
+if (interrupts & CAN.INT.RECEIVE) {
+    // Handle receive interrupt
 }
 ```

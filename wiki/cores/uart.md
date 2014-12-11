@@ -21,10 +21,16 @@ void init(int baudrate, int wordLength, char parity, int stopBits)
 
 with the following parameters:
 
-* **baudrate** : An arbitrary baudrate up to 921600.
+* **baudrate** : An arbitrary baudrate up to 921600
 * **wordLength** : Number of bits per word (5 .. 8)
-* **parity** : Odd, even or no parity. 
+* **parity** : Odd, even or no parity (takes the characters 'O', 'E' or 'N')
 * **stopBits** : Single or double stop bit (1 or 2)
+
+For example, a UART using 8N1 at 9600 bps is initialized as follows:
+
+```java
+myUART.init(9600, 8, 'N', 1);
+```
 
 ### Flow Control
 The UART core is capable of managing hardware CTS/RTS flow control internally. If your application incorporates hardware flow control, call the method
@@ -43,7 +49,7 @@ void transmit(int data)
 void transmit(String str)
 ```
 
-The methods are able to transmit a single integer (0 .. 255) or a string. Since they require more than 8 bits, Unicode characters will be trancated. When using a word length smaller than 8, the most significant bits will be truncated.
+The methods are able to transmit a single integer (0 .. 255) or a string. Since they require more than 8 bits, Unicode characters will be truncated. When using a word length smaller than 8, the most significant bits will be truncated.
 
 ### Receiving
 Reception of data that have been stored in the UARTs receive buffer involves the following methods:
@@ -62,7 +68,7 @@ The following interrupts are currently supported:
 * **RX_AVAILABLE** : Receive buffer has reached its trigger level. Cleared when buffer drops below the trigger level.
 * **TX_EMPTY** : Transmit buffer empty interrupt. Cleared when transmitting or reading interrupt identification register.
 
-Interrupts are managed using the following functions:
+Interrupts are managed using the following methods:
 
 ```java
 void enableInterrupt(int interrupt)
@@ -81,14 +87,14 @@ if (myUart.identifyInterrupt() == UART.INT.RX_AVAILABLE) {
 This method will return -1 in case there is no interrupt pending. For general instructions on interrupts refer to the  [interrupt article](../interrupts.md).
 
 #### Trigger Levels
-The receive buffer trigger level configures how many received words are required to issue an `RX_AVAILABLE` interrupt. There are four levels allowed: 1, 16, 32 and 56. For convenience you can use constants defined in the UART class:
+The receive buffer trigger level configures how many received words are required to issue an `RX_AVAILABLE` interrupt. There are four levels allowed: 1, 16, 32 and 56. For convenience you can use constants defined in the `UART` class:
 
 ```java
 myUart.setRxTriggerLevel(UART.RX_TRIGGER_LEVEL_16);
 ```
 
 ### Auxiliary Outputs
-There are two auxiliary outputs that can be used idependently of the actual UART. By means of the method
+There are two auxiliary outputs that can be used independently of the actual UART. By means of the method
 
 ```java
 void setAuxiliaryOutput(int output, boolean value)

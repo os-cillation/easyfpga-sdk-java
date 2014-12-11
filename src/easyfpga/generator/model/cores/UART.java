@@ -444,6 +444,7 @@ public class UART extends Core {
 
     /**
      * Identify a pending interrupt
+     *
      * @return interrupt identification number or -1 if no interrupt pending
      * @throws CommunicationException
      */
@@ -456,7 +457,7 @@ public class UART extends Core {
             return -1;
         }
 
-        /* determine and return interrupt type*/
+        /* determine and return interrupt type */
         if (iir_low == 0x06) {
             return INT.RX_LINE_STATUS;
         }
@@ -479,6 +480,7 @@ public class UART extends Core {
 
     /**
      * Set an auxiliary output pin
+     *
      * @param output 1 or 2
      * @param value
      * @throws CommunicationException
@@ -496,7 +498,7 @@ public class UART extends Core {
     }
 
     /**
-     * Checks whether the transmitter buffer is empty
+     * Check whether the transmitter buffer is empty
      *
      * @return True if empty
      * @throws CommunicationException
@@ -516,7 +518,7 @@ public class UART extends Core {
     }
 
     /**
-     * Sets the desired baudrate
+     * Setsthe desired baudrate
      *
      * @param baudrate
      * @throws CommunicationException
@@ -542,7 +544,7 @@ public class UART extends Core {
     }
 
     /**
-     * Sets divisor latch access bit in order to set the baudrate
+     * Set divisor latch access bit in order to set the baudrate
      *
      * @throws CommunicationException
      */
@@ -551,7 +553,7 @@ public class UART extends Core {
     }
 
     /**
-     * Resets divisor latch access bit in order to access the buffer registers
+     * Reset divisor latch access bit in order to access the buffer registers
      *
      * @return True if successful
      * @throws CommunicationException

@@ -6,8 +6,9 @@ An I2C master core.
 * **SDA** : Data I/O
 * **SCL** : Clock I/O
 
-## Usage
 Note that both pins are bidirectional and have to be connected directly to FPGA GPIO pins in the FPGA definition.
+
+## Usage
 
 ### Initialization
 The core can either be initialized in standard or in fast mode:
@@ -46,14 +47,14 @@ In case the slave device does not acknowledge any of the transfers, an `I2CExcep
 In case these shorthand methods can not be applied, there is also a generic transfer method giving full control of the core:
 
 ```java
-int transfer(int data, boolean transmit, Boolean start, boolean nack)
+int transfer(int data, boolean write, Boolean start, boolean nack)
 ```
 
 The method requires the following parameters:
 
-* ** data ** : 8 bits of data when transmitting data or 7 address bits plus the R/W bit (which is the LSB)
-* ** write ** : True, when transmitting data or address. False when receiving, the data parameter will then be ignored.
-* ** start ** : True, if the start condition should be asserted. False, if the stop condition should be asserted at the end of the transfer. If neither start nor stop condition should be asserted this parameter can be set to `null`.
-* ** nack ** : True, if a nack should be sent to indicate the end of a read transfer.
+* **data** : 8 bits of data when writing data or 7 address bits plus the R/W bit (which is the LSB)
+* **write** : True, when writing data or address. False when reading. Then, the data parameter will then be ignored.
+* **start** : True, if the start condition should be asserted. False, if the stop condition should be asserted at the end of the transfer. If neither start nor stop condition should be asserted this parameter can be set to `null`.
+* **nack** : True, if a nack should be sent to indicate the end of a read transfer.
 
-Note that the `nack` parameter can only be true for read transfers (`write` is false). For read transfers the method will return the value that has been received from a slave device. When writing (`write` is true), the method will return `1` if the transfer has been acknowledged by a slave and `0` if this is not the case.
+Note that the `nack` parameter can only be true for read transfers (`write` is false). For read transfers the method will return the value that has been received from a slave device. When writing (`write` is true), the method will return `1` if the transfer has been acknowledged by a slave and `0` if not.
