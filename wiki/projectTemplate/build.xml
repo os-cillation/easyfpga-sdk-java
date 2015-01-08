@@ -53,8 +53,8 @@
         </java>
     </target>
 
-    <!--create a deployable jar file (without building FPGA binary) -->
-    <target name="jar" depends="clean, build">
+    <!-- build all and create deployable jar file -->
+    <target name="jar" depends="clean, build, buildFPGA">
         <copy file="${bin.file}" todir="${build.dir}" />
         <jar jarfile="${dist.dir}/${jarname}">
             <fileset dir="${build.dir}" excludes="**/*.java" />
