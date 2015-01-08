@@ -366,6 +366,9 @@ public class UART extends Core {
         setDivisorLatchAccessBit();
         writeRegister(REG.FCR, 0x21);
         resetDivisorLatchAccessBit();
+
+        /* disable tx empty interrupt */
+        disableInterrupt(UART.INT.TX_EMPTY);
     }
 
     /**
