@@ -19,7 +19,11 @@
 
 package easyfpga.generator;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Utility class with helper methods
@@ -61,6 +65,34 @@ public final class Util {
         else {
             return null;
         }
+    }
+
+    /**
+     * Read string from a file
+     *
+     * @param file to be read
+     * @return string containing file content or empty string on file not found
+     * @throws IOException
+     */
+    public static String readFile(File file) throws IOException {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        }
+        catch (FileNotFoundException e) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        String line = reader.readLine();
+
+        while (line != null) {
+            sb.append(line);
+            sb.append("\n");
+            line = reader.readLine();
+        }
+        String fileString = sb.toString();
+        reader.close();
+        return fileString;
     }
 
 }

@@ -67,7 +67,7 @@ public class FPGA2VHDLGenerator {
      * @throws BuildException
      */
     public void buildFPGA(FPGA fpga) throws BuildException {
-        buildFPGA(fpga, true);
+        buildFPGA(fpga, false);
     }
 
     /**
@@ -82,24 +82,27 @@ public class FPGA2VHDLGenerator {
             File folder = Util.getEasyFPGAFolder();
             folder.mkdirs();
             copySocFiles(folder);
+
+            /* generate TLE and intercon and check if there are changes */
+            boolean tleUnchanged = generateTLE(folder, fpga);
+            boolean interconUnchanged = generateIntercon(folder, fpga);
+
+            /* don't build if TLE and intercon are unchanged and a binary exists */
             File binFile = new File(folder, BIN_FILENAME);
-
-            /* check if bin file exists and start generator processes */
-            if (!binFile.exists() || forceBuild) {
-                generateTLE(folder, fpga);
-                generateIntercon(folder, fpga);
-                generateXST_Project(folder, fpga);
-                generateXST_Script(folder, fpga);
-                File buildFile = copyBuildScript(folder);
-                runBuildProcess(buildFile);
-                if (!binFile.exists()) {
-                    throw new BuildException();
-                }
-            }
-            else {
-                System.out.println(String.format("Found binary file: %s", binFile.getCanonicalPath()));
+            if (!forceBuild && tleUnchanged && interconUnchanged && binFile.exists()) {
+                System.out.println("Top-Level-Entity and Intercon are unchanged, "
+                        + "skipping binary build.");
+                return;
             }
 
+            generateXST_Project(folder, fpga);
+            generateXST_Script(folder, fpga);
+            File buildFile = copyBuildScript(folder);
+            runBuildProcess(buildFile);
+
+            if (!binFile.exists()) {
+                throw new BuildException();
+            }
         }
         catch (Exception e) {
             throw new BuildException(e.getMessage());
@@ -182,16 +185,31 @@ public class FPGA2VHDLGenerator {
      *
      * @param folder
      * @param fpga
+     * @return true if top-level-entity has not been changed since last build
      * @throws IOException
      */
-    private void generateTLE(File folder, FPGA fpga) throws IOException {
+    private boolean generateTLE(File folder, FPGA fpga) throws IOException {
         File file = new File(folder, "tle.vhd");
         System.out.println(file.getCanonicalPath());
-        FileWriter writer = new FileWriter(file);
+
+        /* generate TLE string */
         TLEBuilder builder = new TLEBuilder(fpga);
-        String tle = builder.buildTLE();
-        writer.write(tle);
-        writer.close();
+        String newTLE = builder.buildTLE();
+
+        /* read current TLE file */
+        String currentTLE = Util.readFile(file);
+
+        /* compare and abort returning true if equals */
+        if (currentTLE.equals(newTLE)) {
+            return true;
+        }
+        else {
+            /* write */
+            FileWriter writer = new FileWriter(file);
+            writer.write(newTLE);
+            writer.close();
+            return false;
+        }
     }
 
     /**
@@ -199,16 +217,31 @@ public class FPGA2VHDLGenerator {
      *
      * @param folder
      * @param fpga
+     * @return true if intercon has not been changed since last build
      * @throws IOException
      */
-    private void generateIntercon(File folder, FPGA fpga) throws IOException {
+    private boolean generateIntercon(File folder, FPGA fpga) throws IOException {
         File file = new File(folder, "intercon.vhd");
         System.out.println(file.getCanonicalPath());
-        FileWriter writer = new FileWriter(file);
+
+        /* generate intercon string */
         InterconBuilder builder = new InterconBuilder(fpga);
-        String intercon = builder.buildIntercon();
-        writer.write(intercon);
-        writer.close();
+        String newIntercon = builder.buildIntercon();
+
+        /* read current intercon file */
+        String currentIntercon = Util.readFile(file);
+
+        /* compare and abort returning true if equals */
+        if (currentIntercon.equals(newIntercon)) {
+            return true;
+        }
+        else {
+            /* write intercon */
+            FileWriter writer = new FileWriter(file);
+            writer.write(newIntercon);
+            writer.close();
+            return false;
+        }
     }
 
     /**
