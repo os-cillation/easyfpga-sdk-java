@@ -56,11 +56,14 @@ Reception of data that have been stored in the UARTs receive buffer involves the
 
 ```java
 int receive()
+String receiveString()
 int[] receive(int length)
 String receiveString(int length)
 ```
 
-The first method can be used to get a single word, whereas the other method get a certain number of words received. When the receive buffer is empty, the methods will return zeroes.
+The `receive()` method gets a single character from the receive buffer and returns it as an integer. When handling string reception the no-parameter method `receiveString()` can be used for reception. It will return all characters received until a binary zero is detected or the receive buffer is empty.
+
+Both methods can be called to receive a certain number of characters, returning an integer array or string. In case the given length is greater than the number of characters in the receive buffer, the result will contain trailing binary zeroes.
 
 ### Interrupts
 The following interrupts are currently supported:

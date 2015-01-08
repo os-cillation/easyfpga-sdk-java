@@ -266,6 +266,35 @@ public class UART extends Core {
     }
 
     /**
+     * Get multiple packets as a String. Stop reception at the first binary zero.
+     *
+     * @return The string in the receive buffer excluding the trailing binary zero.
+     * @throws CommunicationException
+     */
+    public String receiveString() throws CommunicationException {
+
+        StringBuilder sb = new StringBuilder();
+        boolean binaryZeroReceived = false;
+        int[] receivedInts;
+
+        /* read chunks in the size of rxTriggerLevel */
+        while (!binaryZeroReceived) {
+            receivedInts = receive(rxTriggerLevel);
+            for (int i = 0; i < rxTriggerLevel; i++) {
+                if (receivedInts[i] != 0) {
+                    sb.append((char) receivedInts[i]);
+                }
+                else {
+                    binaryZeroReceived = true;
+                    break;
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * Get multiple packets as a String from the UART's receive buffer
      *
      * @param length number of characters to read
