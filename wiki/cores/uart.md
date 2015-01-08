@@ -39,7 +39,7 @@ The UART core is capable of managing hardware CTS/RTS flow control internally. I
 void enabelAutoHardwareFlowControl()
 ```
 
-right after initialization.
+right after initialization. Note, that hardware flow control requires a (crossover) connection of the control lines CTSn and RTSn between both communication partners.
 
 ### Transmitting
 The SDK offers two method to send data through the UART core:

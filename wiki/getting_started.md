@@ -38,6 +38,13 @@ $ java -jar dist/Application.jar
 
 This should start uploading the FPGA binary to the board an then run the application that toggles pins 0..7 of bank 0 using a GPIO8 easyCore. You can now start creating a custom FPGA application.
 
+## Project Structure
+Projects using the easyFPGA SDK always consists of at least two parts: The FPGA definition class and the host application.
+
+At compile time, the FPGA definition class will be converted into VHDL and then fed into the Xilinx toolchain to generate an FPGA binary. In the `build()` method of this class the easyCores have to be instantiated and connected. In order to use them at run time, this class should offer easyCore getter methods.
+
+At run time, the host applications communicates with the board via USB. From the FPGA definition class it obtains references to the easyCores and can then call API methods such as `myGPIO.setAllPins(0xFF)`.
+
 ## Implement FPGA
 In order to give a general guideline on how to implement an FPGA we first discuss the FPGA definition of the project template:
 
@@ -77,6 +84,8 @@ public class HelloFPGA extends FPGA {
 * This inheritance requires the implementation of the `build()` method. This method should include the instantiation of all easyCores and calls of the connect method.
 * The connect method connects a source- to a sink-pin. In order to get a certain pin, the easyCores as well as the FPGA have `getPin()` methods.
 * The getter method `getGPIO()` will be called by the host application for referencing the GPIO easyCore
+
+Note that it is mandatory to call the `connect` method with at least one pin of each easyCore.
 
 ## Implement Host Application
 In the following we will discuss the host application included in the template:

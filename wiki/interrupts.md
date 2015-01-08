@@ -21,7 +21,7 @@ class ReceiveListener implements InterruptListener {
     public void interruptHandler(InterruptEvent event) {
 
         UART uart = (UART) event.getCore();
-        char received = uart.receive();
+        char received = (char) uart.receive();
         System.out.print(received);
 
         fpga.enableInterrupts();
