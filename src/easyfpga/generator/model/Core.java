@@ -60,6 +60,7 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected void wrRegister(int offset, int data) throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + offset;
         fpga.getCommunicator().writeRegister(address, data);
     }
@@ -72,6 +73,7 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected void multiWrRegister(int offset, int[] data) throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + offset;
         fpga.getCommunicator().writeRegister(address, data);
     }
@@ -84,6 +86,8 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected void multiWrRegister(int offset, char[] data) throws CommunicationException {
+
+        if (fpga == null) throwFPGANullException();
 
         /* convert to int array */
         int[] intData = new int[data.length];
@@ -104,6 +108,7 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected void wrRegisterAAI(int startOffset, int[] data) throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int startAddress = getCoreAddress() + startOffset;
         fpga.getCommunicator().writeRegisterAAI(startAddress, data);
     }
@@ -137,6 +142,7 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected int rdRegister(int offset) throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + offset;
         return fpga.getCommunicator().readRegister(address);
     }
@@ -150,6 +156,7 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected int[] rdRegister(int offset, int numberOfReads) throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + offset;
         return fpga.getCommunicator().readRegister(address, numberOfReads);
     }
@@ -163,6 +170,7 @@ public abstract class Core extends Component {
      */
     protected void rdRegisterAsync(int offset, RegisterReadCallback callback)
             throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + offset;
         fpga.getCommunicator().readRegisterAsync(address, callback);
     }
@@ -178,7 +186,7 @@ public abstract class Core extends Component {
      */
     protected void rdRegisterAsync(int offset, int numberOfReads, MultiRegisterReadCallback callback)
             throws CommunicationException {
-
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + offset;
         fpga.getCommunicator().readRegisterAsync(address, numberOfReads, callback);
     }
@@ -192,6 +200,7 @@ public abstract class Core extends Component {
      * @throws CommunicationException
      */
     protected int[] rdRegisterAAI(int startOffset, int length) throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int address = getCoreAddress() + startOffset;
         return fpga.getCommunicator().readRegisterAAI(address, length);
     }
@@ -206,6 +215,7 @@ public abstract class Core extends Component {
      */
     protected void rdRegisterAAIAsync(int startOffset, int length, MultiRegisterReadCallback callback)
             throws CommunicationException {
+        if (fpga == null) throwFPGANullException();
         int startAddress = getCoreAddress() + startOffset;
         fpga.getCommunicator().readRegisterAAIAsync(startAddress, length, callback);
     }
@@ -225,6 +235,19 @@ public abstract class Core extends Component {
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "@" + String.format("0x%02X", index);
+    }
+
+    /**
+     * Throw a NullPointerException with message asking whether the connect method has been
+     * called. Reason for null-checking the fpga reference: In case a core is instantiated
+     * in the annotated fpga definition class but the connect method is never called, the
+     * core will not get an fpga reference leading to a nullpointer exception.
+     *
+     * @throws CommunicationException
+     */
+    private static void throwFPGANullException() {
+        throw new NullPointerException("Communication error due to missing FPGA reference."
+                + "Did you call the connect method in the annotated FPGA class?");
     }
 
     /**

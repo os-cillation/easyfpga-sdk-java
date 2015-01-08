@@ -51,7 +51,7 @@ public abstract class Component {
     }
 
     /**
-     * Set the component's index. The Core instances (which inherit from Component) the index is
+     * Set the components index. In Core instances (which inherit from Component) the index is
      * used to determine the core address.
      *
      * @param index to set
