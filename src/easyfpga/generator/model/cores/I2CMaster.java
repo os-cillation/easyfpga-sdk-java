@@ -264,7 +264,7 @@ public class I2CMaster extends Core {
     /**
      * Check whether the core is enabled
      *
-     * @return
+     * @return true if the core is enabled
      * @throws CommunicationException
      */
     private boolean isEnabled() throws CommunicationException {
@@ -312,7 +312,7 @@ public class I2CMaster extends Core {
     /**
      * Returns the TIP (Transmission In Progress) bit
      *
-     * @return
+     * @return true if a transmission is in progress
      * @throws CommunicationException
      */
     private boolean transmissionInProgress() throws CommunicationException {

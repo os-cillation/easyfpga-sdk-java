@@ -714,9 +714,7 @@ public class Communicator {
     }
 
     /**
-     * Get a multiline communicator status String
-     *
-     * @return
+     * @return a string containing communicator status information
      */
     public String getStatusString() {
         return "<---- COMMUNICATOR STATUS ---->\n" +

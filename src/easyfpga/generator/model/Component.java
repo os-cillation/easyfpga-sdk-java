@@ -80,7 +80,7 @@ public abstract class Component {
      * Create a pin with a given name and add it to the list of pins.
      *
      * @param name of the pin
-     * @return
+     * @return pin object created
      */
     public Pin getPin(String name) {
         if (!pinMap.containsKey(name)) {
@@ -94,7 +94,7 @@ public abstract class Component {
      * Get all pins connected to a given pin
      *
      * @param pin
-     * @return
+     * @return a collection containing all connected pins
      */
     public Collection<Pin> getTargets(Pin pin) {
         Set<Pin> result = new TreeSet<Pin>();

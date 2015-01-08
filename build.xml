@@ -87,7 +87,7 @@
 	<target name="javadoc">
 		<!-- create javadoc dir -->
 		<javadoc sourcepath="${src.dir}" destdir="${javadoc.dir}">
-			<fileset dir="${src.dir}">
+			<fileset dir="${src.dir}/easyfpga">
 				<include name="**" />
 			</fileset>
 		</javadoc>

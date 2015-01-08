@@ -243,7 +243,7 @@ public class FPGA2VHDLGenerator {
      * Copy build.sh script file to target directory
      *
      * @param targetDirectory
-     * @return
+     * @return File object pointing to copy target
      * @throws IOException
      */
     private File copyBuildScript(File targetDirectory) throws IOException {

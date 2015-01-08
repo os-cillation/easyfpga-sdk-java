@@ -311,7 +311,7 @@ public class Protocol {
      * @param id Package ID
      * @param startAddress first address to read from. 16 bit core and register address (0xCCRR)
      * @param length number of registers to read
-     * @return
+     * @return frame object
      */
     public static Frame getFrameREGISTER_ARD(int id, int startAddress, int length) {
 
@@ -334,8 +334,8 @@ public class Protocol {
     /**
      * Generate SECTOR_WR frame for writing an application memory sector
      *
-     * @param int sector_id: Number of sector 0 .. 1023
-     * @param byte[] sector_data
+     * @param sector_id number of sector 0 .. 1023
+     * @param sector_data byte array containing the sector data
      * @return frame object
      */
     public static Frame getFrameSECTOR_WR(int sector_id, byte[] sector_data) {
@@ -383,7 +383,7 @@ public class Protocol {
     /**
      * Generate STATUS_WR frame for writing the MCU's soc_status structure
      *
-     * @param FPGABinary object that contains the status information
+     * @param conf FPGABinary object that contains the status information
      * @return byte[] that contains generated frame
      */
     public static Frame getFrameSTATUS_WR(FPGABinary conf) {

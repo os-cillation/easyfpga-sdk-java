@@ -32,7 +32,7 @@ public final class Util {
      * Search for the user home directory and create a .easyfpga directory. If user home is not
      * available, a temp directory is used.
      *
-     * @return
+     * @return File object pointing to easyFPGA folder
      */
     public static File getEasyFPGAFolder() {
         String userHome = System.getProperty("user.home");
