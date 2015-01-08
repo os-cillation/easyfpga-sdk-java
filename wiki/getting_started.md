@@ -21,13 +21,12 @@ $ sudo update-alternatives --config java
 * Before you start to modify the sources, try to build them as they are:
 
 ```
-$ ant buildFPGA
 $ ant jar
 ```
 
-The first Ant target will generate VHDL code for the FPGA and use the Xilinx tools to generate a binary file for the FPGA. In case the Xilinx tools have not been installed in the default location, this step will fail. When you run or compile for the first time, a configuration file will be created in `~/.config/easyfpga.conf`. Here, you can set the directory where easyFPGA will look for the Xilinx tools and try again. For further details see the article regarding the [configuration](configuration.md).
+The will build the java code, generate VHDL code for the FPGA, use the Xilinx tools to generate a binary file for the FPGA and finally package everything in a deployable jar archive. Since `jar` is the default target you also just run `ant`.
 
-The second Ant target will compile the Java code and generate a deployable jar file including the FPGA binary.
+In case the Xilinx tools have not been installed in the default location, this step will fail. When you compile for the first time, a configuration file will be created in `~/.config/easyfpga.conf`. Here, you can set the directory where easyFPGA will look for the Xilinx tools and try again. For further details see the article regarding the [configuration](configuration.md).
 
 * If everything went fine you will see a directory named dist including the file Application.jar
 * After connecting your board, you can now run the application:
