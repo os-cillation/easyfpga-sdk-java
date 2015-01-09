@@ -56,6 +56,12 @@
 		<copy file="logging.properties" todir="${build.dir}" />
 	</target>
 
+	<!-- Create manifest for setting main class to upload tool -->
+	<target name="manifest">
+		<manifest file="${build.dir}/MANIFEST.MF">
+			<attribute name="Main-Class" value="easyfpga.UploadTool"/>
+		</manifest>
+	</target>
 
 	<!-- Clean -->
 	<target name="clean">
@@ -98,16 +104,20 @@
 	</target>
 
 	<!-- Create a deployable jar file -->
-	<target name="jar" depends="clean, build">
-		<jar destfile="${dist.dir}\easyFPGA.jar" basedir="${build.dir}">
+	<target name="jar" depends="clean, build, manifest">
+		<jar destfile="${dist.dir}\easyFPGA.jar"
+			basedir="${build.dir}"
+			manifest="${build.dir}/MANIFEST.MF">
 			<service type="javax.annotation.processing.Processor"
 			           provider="easyfpga.generator.annotation.EasyFPGAAnnotationProcessor"/>
 		</jar>
 	</target>
 
 	<!-- Create a deployable jar file with debugging info and logging -->
-	<target name="jardbg" depends="clean, builddbg">
-		<jar destfile="${dist.dir}\easyFPGA.jar" basedir="${build.dir}">
+	<target name="jardbg" depends="clean, builddbg, manifest">
+		<jar destfile="${dist.dir}\easyFPGA.jar"
+			basedir="${build.dir}"
+			manifest="${build.dir}/MANIFEST.MF">
 			<service type="javax.annotation.processing.Processor"
 			           provider="easyfpga.generator.annotation.EasyFPGAAnnotationProcessor"/>
 		</jar>
