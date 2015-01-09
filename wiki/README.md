@@ -1,6 +1,6 @@
 # easyFPGA Wiki
 
-Welcome to the easyFPGA wiki! Here you will find all information required to get started with the design of FPGA based systems using the easyFPGA SDK and board. Furthermore there is a description of the easyCores that are currently available.
+Welcome to the easyFPGA wiki! Here you will find all information required to get started with the design of FPGA based systems using the easyFPGA SDK and board. Furthermore there is a description of the easyCores that are currently available. 
 
 ![The easyFPGA board](images/board.jpg)
 
@@ -13,6 +13,7 @@ Welcome to the easyFPGA wiki! Here you will find all information required to get
 
 ## Hardware
 
+* [Upload Tool](upload_tool.md)
 * [easyFPGA Board](board.md)
 * [MCU Update](mcu_update.md)
 
