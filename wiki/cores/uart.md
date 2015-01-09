@@ -36,7 +36,7 @@ myUART.init(9600, 8, 'N', 1);
 The UART core is capable of managing hardware CTS/RTS flow control internally. If your application incorporates hardware flow control, call the method
 
 ```java
-void enabelAutoHardwareFlowControl()
+void enableAutoHardwareFlowControl()
 ```
 
 right after initialization. Note, that hardware flow control requires a (crossover) connection of the control lines CTSn and RTSn between both communication partners.
@@ -64,6 +64,8 @@ String receiveString(int length)
 The `receive()` method gets a single character from the receive buffer and returns it as an integer. When handling string reception the no-parameter method `receiveString()` can be used for reception. It will return all characters received until a binary zero is detected or the receive buffer is empty.
 
 Both methods can be called to receive a certain number of characters, returning an integer array or string. In case the given length is greater than the number of characters in the receive buffer, the result will contain trailing binary zeroes.
+
+Note that all receive methods are non-blocking and will return binary zeroes or empty strings respectively.
 
 ### Interrupts
 The following interrupts are currently supported:

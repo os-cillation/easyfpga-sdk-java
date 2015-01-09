@@ -247,7 +247,7 @@ public class UART extends Core {
     /**
      * Get a single packet from the UART's receive buffer
      *
-     * @return Received packet
+     * @return Received packet, or binary zero if receive buffer is empty
      * @throws CommunicationException
      */
     public int receive() throws CommunicationException {
@@ -258,7 +258,8 @@ public class UART extends Core {
      * Get multiple packets from the UART's receive buffer
      *
      * @param length number of bytes to read
-     * @return Multiple packets received as an int[]
+     * @return Multiple packets received as an int[] which may contain binary zeroes if the
+     *          receive buffer runs empty
      * @throws CommunicationException
      */
     public int[] receive(int length) throws CommunicationException {
