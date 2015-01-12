@@ -13,7 +13,7 @@
 	<property name="javadoc.dir" location="javadoc" />
 	<property name="jssc.dir" location="src/jssc" />
 
-	<!-- Init -->
+	<!-- init -->
 	<target name="init">
 		<mkdir dir="bin" />
 		<copy includeemptydirs="false" todir="${build.dir}">
@@ -51,36 +51,20 @@
 		</copy>
 	</target>
 
-	<!-- Copy logging.properties -->
-	<target name="setuplogging">
-		<copy file="logging.properties" todir="${build.dir}" />
-	</target>
-
-	<!-- Create manifest for setting main class to upload tool -->
+	<!-- create manifest for setting main class to upload tool -->
 	<target name="manifest">
 		<manifest file="${build.dir}/MANIFEST.MF">
 			<attribute name="Main-Class" value="easyfpga.UploadTool"/>
 		</manifest>
 	</target>
 
-	<!-- Clean -->
+	<!-- clean -->
 	<target name="clean">
 		<delete dir="${build.dir}" />
-		<!-- <delete dir="${dist.dir}" /> -->
 	</target>
 
-	<!-- Build for release -->
+	<!-- compile -->
 	<target depends="init" name="build">
-		<echo message="${ant.project.name}: ${ant.file}" />
-		<javac destdir="${build.dir}" includeantruntime="false" source="${source}" target="${target}" bootclasspath="${bootstrap}">
-			<src path="${jssc.dir}" />
-			<src path="${src.dir}" />
-			<src path="templates" />
-		</javac>
-	</target>
-
-	<!-- Build for debugging -->
-	<target depends="init, setuplogging" name="builddbg">
 		<echo message="${ant.project.name}: ${ant.file}" />
 		<javac destdir="${build.dir}" includeantruntime="false" source="${source}" target="${target}" bootclasspath="${bootstrap}" debug="true">
 			<src path="${jssc.dir}" />
@@ -89,7 +73,7 @@
 		</javac>
 	</target>
 
-	<!-- Javadoc -->
+	<!-- javadoc -->
 	<target name="javadoc">
 		<!-- create javadoc dir -->
 		<javadoc sourcepath="${src.dir}" destdir="${javadoc.dir}">
@@ -103,7 +87,7 @@
 		<delete dir="${javadoc.dir}" />
 	</target>
 
-	<!-- Create a deployable jar file -->
+	<!-- create jar archive -->
 	<target name="jar" depends="clean, build, manifest">
 		<jar destfile="${dist.dir}\easyFPGA.jar"
 			basedir="${build.dir}"
@@ -113,17 +97,7 @@
 		</jar>
 	</target>
 
-	<!-- Create a deployable jar file with debugging info and logging -->
-	<target name="jardbg" depends="clean, builddbg, manifest">
-		<jar destfile="${dist.dir}\easyFPGA.jar"
-			basedir="${build.dir}"
-			manifest="${build.dir}/MANIFEST.MF">
-			<service type="javax.annotation.processing.Processor"
-			           provider="easyfpga.generator.annotation.EasyFPGAAnnotationProcessor"/>
-		</jar>
-	</target>
-	
-	<!-- Create jar and javadoc-jar -->
+	<!-- create jar and javadoc-jar -->
 	<target name="deploy" depends="jar, javadoc">
 	</target>
 
