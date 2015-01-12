@@ -19,17 +19,15 @@
 
 package easyfpga.generator.model;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.LogManager;
 
 import jssc.SerialPortException;
+import easyfpga.Util;
 import easyfpga.communicator.Communicator;
 import easyfpga.communicator.FPGABinary;
 import easyfpga.communicator.InterruptListener;
@@ -112,7 +110,7 @@ public abstract class FPGA extends Component {
      * @throws Exception
      */
     public void init() throws Exception {
-        setupLogging();
+        Util.setupLogging();
         reset();
         communicator = uploadAndConnect();
     }
@@ -125,42 +123,9 @@ public abstract class FPGA extends Component {
      * @throws Exception
      */
     public void init(int serial) throws Exception {
-        setupLogging();
+        Util.setupLogging();
         reset();
         communicator = uploadAndConnect(serial);
-    }
-
-    private void setupLogging() {
-        LogManager manager = LogManager.getLogManager();
-
-        /* load logging.properties from .settings */
-        InputStream input = FPGA.class.getResourceAsStream("/logging.properties");
-        if (input != null) {
-            try {
-                manager.readConfiguration(input);
-                return;
-            }
-            catch (SecurityException e1) {
-                e1.printStackTrace();
-            }
-            catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-
-        /* turn off logging if no logging.properties found */
-        else {
-            String config = ".level= OFF";
-            try {
-                manager.readConfiguration(new ByteArrayInputStream(config.getBytes()));
-            }
-            catch (SecurityException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
