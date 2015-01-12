@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.Adler32;
 
-import easyfpga.generator.Util;
+import easyfpga.Util;
 
 /**
  * Represents the binary that configures the FPGA, manages its upload and triggers the FPGA

@@ -21,14 +21,11 @@ package easyfpga.generator;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,6 +36,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import easyfpga.ConfigurationFile;
+import easyfpga.Util;
 import easyfpga.exceptions.BuildException;
 import easyfpga.generator.model.FPGA;
 import easyfpga.generator.wishbone.InterconBuilder;
@@ -129,7 +127,7 @@ public class FPGA2VHDLGenerator {
             copyJarFolder(jarConnection, folder);
         } else {
             File soc = new File(resource.getPath());
-            copyFolder(soc, folder);
+            Util.copy(soc, folder);
         }
     }
 
@@ -152,31 +150,10 @@ public class FPGA2VHDLGenerator {
                 } else {
                     InputStream inputStream = jarFile.getInputStream(entry);
                     File destFile = new File(folder, entry.getName());
-                    copyFileUsingStream(inputStream, destFile);
+                    Util.copyFileUsingStream(inputStream, destFile);
                 }
             }
 
-        }
-    }
-
-    /**
-     * Helper method to copy files from filesystem
-     *
-     * @param src
-     * @param dest
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    private void copyFolder(File src, File dest) throws FileNotFoundException, IOException {
-        if (src.isDirectory()) {
-            for (File file : src.listFiles()) {
-                File target = new File(dest, src.getName());
-                target.mkdirs();
-                copyFolder(file, target);
-            }
-        } else {
-            File target = new File(dest, src.getName());
-            copyFileUsingStream(new FileInputStream(src), target);
         }
     }
 
@@ -282,31 +259,9 @@ public class FPGA2VHDLGenerator {
     private File copyBuildScript(File targetDirectory) throws IOException {
         File target = new File(targetDirectory, "build.sh");
         InputStream inputStream = FPGA2VHDLGenerator.class.getResourceAsStream("/templates/build.sh");
-        copyFileUsingStream(inputStream, target);
+        Util.copyFileUsingStream(inputStream, target);
         System.out.println(target.getCanonicalPath());
         return target;
-    }
-
-    /**
-     * Helper method to copy files via inputstream
-     *
-     * @param is
-     * @param dest
-     * @throws IOException
-     */
-    private static void copyFileUsingStream(InputStream is, File dest) throws IOException {
-        OutputStream os = null;
-        try {
-            os = new FileOutputStream(dest);
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = is.read(buffer)) > 0) {
-                os.write(buffer, 0, length);
-            }
-        } finally {
-            is.close();
-            os.close();
-        }
     }
 
     /**

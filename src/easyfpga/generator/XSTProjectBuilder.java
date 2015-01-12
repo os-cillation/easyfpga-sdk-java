@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
+import easyfpga.Util;
 import easyfpga.exceptions.BuildException;
 import easyfpga.generator.model.Component;
 import easyfpga.generator.model.FPGA;

@@ -17,13 +17,16 @@
  *
  */
 
-package easyfpga.generator;
+package easyfpga;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Utility class with helper methods
@@ -64,6 +67,59 @@ public final class Util {
         }
         else {
             return null;
+        }
+    }
+
+    /**
+     * Copy files or directories recursively
+     *
+     * @param source source file or directory
+     * @param dest destination file or directory
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static void copy(File source, File dest)
+            throws FileNotFoundException, IOException {
+
+        if (source.isDirectory()) {
+            for (File file : source.listFiles()) {
+                File target = new File(dest, source.getName());
+                target.mkdirs();
+                copy(file, target);
+            }
+        }
+        else {
+            File target = new File(dest, source.getName());
+            Util.copyFileUsingStream(new FileInputStream(source), target);
+        }
+    }
+
+    /**
+     * Copy file from a given InputStream to a destination file
+     *
+     * @param sourceStream source file as an InputStream
+     * @param dest destination given as a File
+     * @throws IOException
+     */
+    public static void copyFileUsingStream(InputStream sourceStream, File dest)
+            throws IOException {
+
+        if (sourceStream == null) {
+            throw new IllegalArgumentException("Source stream is null");
+        }
+
+        OutputStream destStream = null;
+        try {
+            destStream = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = sourceStream.read(buffer)) > 0) {
+                destStream.write(buffer, 0, length);
+            }
+        }
+        finally {
+            sourceStream.close();
+            destStream.close();
         }
     }
 
