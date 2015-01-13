@@ -167,7 +167,10 @@ public final class Util {
             propertiesInputStream = new FileInputStream(getLoggingPropertiesPath());
         }
         catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.err.println("WARNING: No logging properties found at "
+                                + getLoggingPropertiesPath() + "\n" +
+                               "         Will use default logging.properties");
+            return;
         }
 
         /* hand the properties file to the log manager */
