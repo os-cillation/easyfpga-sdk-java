@@ -1,5 +1,5 @@
 -- This file is part of easyFPGA.
--- Copyright 2013,2014 os-cillation GmbH
+-- Copyright 2013-2015 os-cillation GmbH
 --
 -- easyFPGA is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -71,7 +71,6 @@ end %wbs_component_name;
 
 -------------------------------------------------------------------------------
 architecture behavioral of %wbs_component_name is
- 
 -------------------------------------------------------------------------------
    ----------------------------------------------
    -- register addresses

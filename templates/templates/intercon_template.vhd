@@ -1,5 +1,5 @@
 -- This file is part of easyFPGA.
--- Copyright 2013,2014 os-cillation GmbH
+-- Copyright 2013-2015 os-cillation GmbH
 --
 -- easyFPGA is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ ENTITY intercon is
 
       -- wishbone slaves
       %wbslaves
-    
+
       );
 
 end intercon;
@@ -76,12 +76,12 @@ begin -- architecture structural
    -- Connect common signals
    ----------------------------------------------------------------------------
    %csignals
-  
+
    ----------------------------------------------------------------------------
    -- DRD (Slave data out) Multiplexer
    ----------------------------------------------------------------------------
    %drdmultiplexer
-   
+
    ----------------------------------------------------------------------------
    -- Address comparator
    ----------------------------------------------------------------------------
