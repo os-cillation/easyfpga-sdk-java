@@ -49,6 +49,7 @@
 				<exclude name="easy_cores/can_wrapper/fpga_test/"/>
 			</fileset>
 		</copy>
+		<copy file="logging.properties" todir="${build.dir}" />
 	</target>
 
 	<!-- create manifest for setting main class to upload tool -->
