@@ -245,17 +245,25 @@ public class FPGABinary {
         /* skip configuration depending on isConfigured flag and the hash */
         if (remoteStatus.isConfigured()) {
             if (this.hashcode == remoteStatus.getHash()) {
+                LOGGER.fine("FPGA already configured");
                 return true;
             }
         }
 
         /* if not already done, configure fpga */
+        LOGGER.fine("Will now configure FPGA");
         vcp.send(Protocol.getFrameCONF_FPGA());
 
         /* receive and analyze single byte */
         byte reply = vcp.receive(1)[0];
-        if (reply == Protocol.OPC_ACK) return true;
-        else return false;
+        if (reply == Protocol.OPC_ACK) {
+            LOGGER.fine("FPGA successfully configured");
+            return true;
+        }
+        else {
+            LOGGER.warning("FPGA configuration failed. FPGA binary corrupted?");
+            return false;
+        }
     }
 
     private boolean uploadStatus(VirtualComPort vcp) {
