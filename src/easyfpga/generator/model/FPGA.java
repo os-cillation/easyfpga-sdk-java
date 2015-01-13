@@ -87,6 +87,8 @@ public abstract class FPGA extends Component {
      * @throws Exception
      */
     public void synthesizeBinary() throws Exception {
+        Util.prepareLogging();
+
         reset();
         FPGA2VHDLGenerator generator = new FPGA2VHDLGenerator();
         generator.buildFPGA(this);
@@ -110,7 +112,6 @@ public abstract class FPGA extends Component {
      * @throws Exception
      */
     public void init() throws Exception {
-        Util.setupLogging();
         reset();
         communicator = uploadAndConnect();
     }
@@ -123,7 +124,6 @@ public abstract class FPGA extends Component {
      * @throws Exception
      */
     public void init(int serial) throws Exception {
-        Util.setupLogging();
         reset();
         communicator = uploadAndConnect(serial);
     }
@@ -152,6 +152,7 @@ public abstract class FPGA extends Component {
      */
     private Communicator uploadAndConnect(int serial) throws IOException, SerialPortException,
                                                                CommunicationException {
+        Util.initLogging();
 
         /* load configuration file */
         FPGABinary conf = new FPGABinary(null);

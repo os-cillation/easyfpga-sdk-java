@@ -155,15 +155,38 @@ public final class Util {
     }
 
     /**
-     * Setup logging by using the properties file in the easyFPGA directory. If necessary, create
-     * logging directory or copy properties file.
+     * Setup logging by using the properties file in the easyFPGA directory.
+     * Called at runtime to setup logging.
      */
-    public static void setupLogging() {
+    public static void initLogging() {
         LogManager manager = LogManager.getLogManager();
 
+        /* open logging.properties file in easyFPGA directory */
+        InputStream propertiesInputStream = null;
+        try {
+            propertiesInputStream = new FileInputStream(getLoggingPropertiesPath());
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        /* hand the properties file to the log manager */
+        try {
+            manager.readConfiguration(propertiesInputStream);
+            propertiesInputStream.close();
+        }
+        catch (SecurityException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Ensure that logging.properties file and logging directory exist. Called during build process.
+     */
+    public static void prepareLogging() {
         /* create log directory if necessary */
         String logDirPath = System.getProperty("user.home") + File.separator + EASY_FPGA_FOLDER
-                       + File.separator + LOGGING_FOLDER;
+                          + File.separator + LOGGING_FOLDER;
         File logDir = new File(logDirPath);
         if (!logDir.exists()) {
             if (logDir.mkdirs()) {
@@ -175,9 +198,7 @@ public final class Util {
         }
 
         /* copy properties file if necessary */
-        String propertiesPath = System.getProperty("user.home") + File.separator + EASY_FPGA_FOLDER
-                              + File.separator + "logging.properties";
-        File propertiesFile = new File(propertiesPath);
+        File propertiesFile = new File(getLoggingPropertiesPath());
         if (!propertiesFile.exists()) {
             /* copy properties file from jar to .easyFPGA */
             InputStream propertiesStream = Util.class.getResourceAsStream("/logging.properties");
@@ -188,24 +209,12 @@ public final class Util {
                 e.printStackTrace();
             }
         }
-
-        /* open logging.properties file in easyFPGA directory */
-        InputStream propertiesInputStream = null;
-        try {
-            propertiesInputStream = new FileInputStream(propertiesPath);
-        }
-        catch (FileNotFoundException e) {
-            /* should not happen since file has been copied before */
-            e.printStackTrace();
-        }
-
-        /* hand the (existing) properties file to the log manager */
-        try {
-            manager.readConfiguration(propertiesInputStream);
-            propertiesInputStream.close();
-        }
-        catch (SecurityException | IOException e) {
-            e.printStackTrace();
-        }
     }
+
+    private static String getLoggingPropertiesPath() {
+        String propertiesPath = System.getProperty("user.home") + File.separator + EASY_FPGA_FOLDER
+                + File.separator + "logging.properties";
+        return propertiesPath;
+    }
+
 }
