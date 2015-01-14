@@ -19,6 +19,8 @@
 
 package easyfpga;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import static java.nio.file.FileVisitResult.*;
 import java.util.logging.LogManager;
 
 /**
@@ -168,6 +169,30 @@ public final class Util {
     }
 
     /**
+     * Remove all files with a certain filename extension from a given directory
+     *
+     * @param directory containing the files to delete
+     * @param extension files with this filename extension will be removed
+     * @return true if successful
+     */
+    public static boolean removeFilesByExtension(File directory, String extension) {
+
+        boolean success = true;
+        for (File f : directory.listFiles()) {
+
+            /* skip directories */
+            String currentFileExt = getFilenameExtension(f);
+            if (currentFileExt == null) continue;
+
+            /* remove matching files */
+            if (currentFileExt.equals(extension)) {
+                if (!f.delete()) success = false;
+            }
+        }
+        return success;
+    }
+
+    /**
      * Read string from a file
      *
      * @param file to be read
@@ -260,5 +285,4 @@ public final class Util {
                 + File.separator + "logging.properties";
         return propertiesPath;
     }
-
 }
