@@ -28,6 +28,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import static java.nio.file.FileVisitResult.*;
 import java.util.logging.LogManager;
 
 /**
@@ -124,6 +131,40 @@ public final class Util {
             sourceStream.close();
             destStream.close();
         }
+    }
+
+    /**
+     * Remove a directory and its contents recursively
+     *
+     * @param directory to be removed
+     * @throws IOException
+     */
+    public static void removeRecursively(File directory) throws IOException {
+        Path path = Paths.get(directory.getCanonicalPath());
+
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) throws IOException {
+
+                Files.delete(file);
+                return CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir,
+                    IOException exc) throws IOException {
+
+                if (exc == null) {
+                    Files.delete(dir);
+                    return CONTINUE;
+                }
+                else {
+                    throw exc;
+                }
+            }
+        });
     }
 
     /**
