@@ -173,11 +173,10 @@ public final class Util {
      *
      * @param directory containing the files to delete
      * @param extension files with this filename extension will be removed
-     * @return true if successful
+     * @throws IOException
      */
-    public static boolean removeFilesByExtension(File directory, String extension) {
+    public static void removeFilesByExtension(File directory, String extension) throws IOException {
 
-        boolean success = true;
         for (File f : directory.listFiles()) {
 
             /* skip directories */
@@ -186,10 +185,11 @@ public final class Util {
 
             /* remove matching files */
             if (currentFileExt.equals(extension)) {
-                if (!f.delete()) success = false;
+                if (!f.delete()) {
+                    throw new IOException("Failed to delete file " + f.getCanonicalPath());
+                }
             }
         }
-        return success;
     }
 
     /**

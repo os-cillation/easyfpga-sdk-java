@@ -60,8 +60,9 @@ public class ToolchainHandler {
      * Run the toolchain to generate FPGA binary from HDL sources located in ~/.easyFPGA
      *
      * @throws BuildException
+     * @throws IOException
      */
-    public void runToolchain() throws BuildException {
+    public void runToolchain() throws BuildException, IOException {
 
         print("Build started, this will take some time ...");
         long startMillis = System.currentTimeMillis();
@@ -189,7 +190,7 @@ public class ToolchainHandler {
         runProcess(cmdList);
     }
 
-    private void removeIntermediateFiles() {
+    private void removeIntermediateFiles() throws IOException {
 
         /* remove files by extension */
         ArrayList<String> extensions = new ArrayList<>(Arrays.asList(
