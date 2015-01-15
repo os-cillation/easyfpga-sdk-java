@@ -21,6 +21,7 @@ package easyfpga.generator;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import easyfpga.exceptions.BuildException;
 public class ToolchainHandler {
 
     private ConfigurationFile config;
+    private StringBuilder buildLogBuilder;
     private boolean verbose;
 
     private final String DESIGN_NAME = "tle";
@@ -45,6 +47,7 @@ public class ToolchainHandler {
     public ToolchainHandler() {
         config = new ConfigurationFile();
         BUILD_DIR = Util.getEasyFPGAFolder();
+        buildLogBuilder = new StringBuilder();
 
         /* get verbose flag from config */
         String verboseConfigValue = config.getValue(ConfigurationFile.BUILD_VERBOSE_KEY);
@@ -79,6 +82,7 @@ public class ToolchainHandler {
             generateBitfile();
         }
         catch (BuildException ex) {
+            overwriteBuildLog();
             throw ex;
         }
         finally {
@@ -87,6 +91,7 @@ public class ToolchainHandler {
 
         float durationSeconds = (float) ((System.currentTimeMillis() - startMillis) / 1000.0);
         print(String.format("Build sucessfully finished in %.2f s", durationSeconds));
+        overwriteBuildLog();
     }
 
     private void removeCurrentBinary() throws BuildException {
@@ -240,6 +245,23 @@ public class ToolchainHandler {
         }
     }
 
+    private void overwriteBuildLog() throws IOException {
+        String logFilePath = BUILD_DIR.getCanonicalPath() + File.separator + "log" +
+                             File.separator + "fpgaBuild.log";
+        File log = new File(logFilePath);
+        FileWriter fw = new FileWriter(log);
+        try {
+            fw.write(buildLogBuilder.toString());
+        }
+        catch (IOException e) {
+            throw e;
+        }
+        finally {
+            fw.close();
+        }
+        print("Toolchain output written to " + logFilePath);
+    }
+
     private void runProcess(List<String> command) throws BuildException {
 
         /* say hello */
@@ -279,6 +301,7 @@ public class ToolchainHandler {
             int exitValue = process.waitFor();
             success = exitValue == 0 ? true : false;
             cliOutput = sb.toString();
+            buildLogBuilder.append(cliOutput);
             durationSeconds = (float) ((System.currentTimeMillis() - startMillis) / 1000.0);
         }
         catch (IOException | InterruptedException e) {
@@ -301,15 +324,14 @@ public class ToolchainHandler {
 
     private void print(String message) {
         String ls = System.getProperty("line.separator");
-        String msg;
-        if (verbose) {
-            msg = "*************************************************************************" + ls +
-                  " TOOLCHAIN HANDLER: " + message + ls +
-                  "*************************************************************************";
-        }
-        else {
-            msg = "*** TOOLCHAIN HANDLER: " + message ;
-        }
-        System.out.println(msg);
+        String bar = "*************************************"
+                   + "*************************************" + ls;
+        String prefix = "*** TOOLCHAIN HANDLER: ";
+
+        String msg = prefix + message + ls;
+        String verboseMsg = bar + prefix + message + ls + bar;
+
+        System.out.print(verbose ? verboseMsg : msg);
+        buildLogBuilder.append(verboseMsg);
     }
 }
