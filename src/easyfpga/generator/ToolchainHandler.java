@@ -45,17 +45,23 @@ public class ToolchainHandler {
     public ToolchainHandler() {
         config = new ConfigurationFile();
         BUILD_DIR = Util.getEasyFPGAFolder();
-        verbose = false;
+
+        /* get verbose flag from config */
+        String verboseConfigValue = config.getValue(ConfigurationFile.BUILD_VERBOSE_KEY);
+        if (verboseConfigValue != null && verboseConfigValue.toLowerCase().equals("true")) {
+            verbose = true;
+        }
+        else {
+            verbose = false;
+        }
     }
 
     /**
      * Run the toolchain to generate FPGA binary from HDL sources located in ~/.easyFPGA
      *
-     * @param verbose print toolchain output
      * @throws BuildException
      */
-    public void runToolchain(boolean verbose) throws BuildException {
-        this.verbose = verbose;
+    public void runToolchain() throws BuildException {
 
         print("Build started, this will take some time ...");
         long startMillis = System.currentTimeMillis();

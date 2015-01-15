@@ -84,7 +84,7 @@ public class FPGA2VHDLGenerator {
 
             /* run the toolchain */
             ToolchainHandler toolchainHandler = new ToolchainHandler();
-            toolchainHandler.runToolchain(true);
+            toolchainHandler.runToolchain();
 
             if (!binFile.exists()) {
                 throw new BuildException();

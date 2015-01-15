@@ -55,13 +55,16 @@ public class ConfigurationFile {
     /** Path to the HDL source of the CAN bus core */
     public final static String CAN_SOURCES_KEY = "CAN_SOURCES";
 
+    /** Boolean to specify whether FPGA toolchain output should be shown during build */
+    public final static String BUILD_VERBOSE_KEY = "FPGA_BUILD_VERBOSE";
+
     public ConfigurationFile() {
 
         configuration = new Properties();
 
         /* get configuration path */
         homeDir = System.getProperty("user.home");
-        configPath = homeDir + "/.config/" + CONFIG_NAME;
+        configPath = homeDir + File.separator + ".config" + File.separator + CONFIG_NAME;
 
         /* load file or create default configuration */
         load();
@@ -126,22 +129,28 @@ public class ConfigurationFile {
     private void createDefault() {
 
         /* build configuration file string */
+        String ls = System.getProperty("line.separator");
         StringBuilder sb = new StringBuilder();
-        sb.append("#easyFPGA configuration file\n\n");
+        sb.append("###############################" + ls);
+        sb.append("# easyFPGA configuration file #" + ls);
+        sb.append("###############################" + ls + ls);
 
-        sb.append("#Location of Xilinx toolchain binaries\n");
-        sb.append(XILINX_DIR_KEY + "=/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64\n\n");
+        sb.append("# Location of Xilinx toolchain binaries" + ls);
+        sb.append(XILINX_DIR_KEY + " = /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64" + ls + ls);
 
-        sb.append("#Default USB device the board is connected to. If commented out, easyFPGA\n");
-        sb.append("#will use /dev/ttyUSBn with the lowest n found.\n");
-        sb.append("#" + USB_DEVICE_KEY + "=/dev/ttyUSB0\n\n");
+        sb.append("# Default USB device the board is connected to. If commented out, easyFPGA" + ls);
+        sb.append("# will use /dev/ttyUSBn with the lowest n found." + ls);
+        sb.append("#" + USB_DEVICE_KEY + " = /dev/ttyUSB0" + ls + ls);
 
-        sb.append("#For using the CAN bus controller core, you have to download the sources\n");
-        sb.append("#from opencores.com and copy them to a location of your choice:\n");
-        sb.append("#" + CAN_SOURCES_KEY + "=/absolute/path/to/sources\n");
+        sb.append("# For using the CAN bus controller core, you have to download the sources" + ls);
+        sb.append("# from opencores.com and copy them to a location of your choice:" + ls);
+        sb.append("#" + CAN_SOURCES_KEY + " = /absolute/path/to/sources" + ls + ls);
+
+        sb.append("# Uncomment to show entire output of FPGA toolchain during build" + ls);
+        sb.append("#" + BUILD_VERBOSE_KEY + " = TRUE");
 
         /* create .config directory if necessary */
-        File configDir = new File(homeDir + "/.config/");
+        File configDir = new File(homeDir + File.separator + ".config");
         if (configDir.mkdir()) {
             System.out.println("Created directory: " + configDir.getPath());
         }
