@@ -19,23 +19,19 @@
 
 package easyfpga.generator;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import easyfpga.ConfigurationFile;
 import easyfpga.Util;
 import easyfpga.exceptions.BuildException;
 import easyfpga.generator.model.FPGA;
@@ -47,16 +43,6 @@ import easyfpga.generator.wishbone.InterconBuilder;
 public class FPGA2VHDLGenerator {
 
     private static final String BIN_FILENAME = "tle.bin";
-    private String xilinxPath;
-    private ConfigurationFile configFile;
-
-    public FPGA2VHDLGenerator() {
-
-        /* load or create default configuration  file */
-        this.configFile = new ConfigurationFile();
-
-        this.xilinxPath = configFile.getValue(ConfigurationFile.XILINX_DIR_KEY);
-    }
 
     /**
      * Build an FPGA binary
@@ -95,8 +81,10 @@ public class FPGA2VHDLGenerator {
 
             generateXST_Project(folder, fpga);
             generateXST_Script(folder, fpga);
-            File buildFile = copyBuildScript(folder);
-            runBuildProcess(buildFile);
+
+            /* run the toolchain */
+            ToolchainHandler toolchainHandler = new ToolchainHandler();
+            toolchainHandler.runToolchain(true);
 
             if (!binFile.exists()) {
                 throw new BuildException();
@@ -247,56 +235,5 @@ public class FPGA2VHDLGenerator {
         String xstScript = builder.buildScript();
         writer.write(xstScript);
         writer.close();
-    }
-
-    /**
-     * Copy build.sh script file to target directory
-     *
-     * @param targetDirectory
-     * @return File object pointing to copy target
-     * @throws IOException
-     */
-    private File copyBuildScript(File targetDirectory) throws IOException {
-        File target = new File(targetDirectory, "build.sh");
-        InputStream inputStream = FPGA2VHDLGenerator.class.getResourceAsStream("/templates/build.sh");
-        Util.copyFileUsingStream(inputStream, target);
-        System.out.println(target.getCanonicalPath());
-        return target;
-    }
-
-    /**
-     * Run the build script to create the FPGA binary
-     *
-     * @param buildFile
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    private void runBuildProcess(File buildFile) throws IOException, InterruptedException {
-
-        ProcessBuilder builder = new ProcessBuilder("bash", buildFile.getName());
-        builder.directory(buildFile.getParentFile().getCanonicalFile());
-        builder.redirectErrorStream(true);
-        builder.environment().put("PATH", String.format("%s:%s", builder.environment().get("PATH"),
-                                                                                    xilinxPath));
-
-        long startMillis = System.currentTimeMillis();
-        Process p = builder.start();
-
-        /* print output m shell process */
-        BufferedReader inputReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line;
-        while ((line = inputReader.readLine()) != null) {
-            System.out.println(line);
-        }
-        p.waitFor();
-        long durationMillis = System.currentTimeMillis() - startMillis;
-
-        /* print exit value and duration */
-        System.out.println(String.format("Build exit value: %d", p.exitValue()));
-
-        System.out.println(String.format("Build duration: %d:%02d min",
-                TimeUnit.MILLISECONDS.toMinutes(durationMillis),
-                TimeUnit.MILLISECONDS.toSeconds(durationMillis) -
-                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(durationMillis))));
     }
 }
