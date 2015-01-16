@@ -86,6 +86,7 @@ public class UploadTool {
         }
         catch (SerialPortException | CommunicationException e) {
             e.printStackTrace();
+            System.exit(1);
         }
 
         /* setup communicator and switch to MCU if necessary */
