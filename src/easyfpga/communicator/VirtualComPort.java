@@ -280,17 +280,20 @@ public class VirtualComPort implements SerialPortEventListener {
         LOGGER.entering(getClass().getName(), "purge");
 
         /* remove listener and receive bytes in buffers */
+        int purgedBytes = 0;
         try {
             if (!port.removeEventListener()) {
                 LOGGER.warning("Failed to remove jSSC serial event listener");
             }
 
+            /* read from port until empty */
             while (true) {
-                byte[] byteLeft = port.readBytes(1, 100);
-                LOGGER.fine(String.format("Purged byte: 0x%02X", byteLeft[0]));
+                port.readBytes(1, 100);
+                purgedBytes++;
             }
         }
         catch (SerialPortTimeoutException e) {
+            LOGGER.finer(String.format("Purged %d bytes", purgedBytes));
         }
         catch (SerialPortException e) {
             LOGGER.log(Level.SEVERE, "Throwing exception", e);
@@ -416,6 +419,7 @@ public class VirtualComPort implements SerialPortEventListener {
             }
         });
         if (files == null || files.length == 0) {
+            LOGGER.severe("No matching ttyUSB devices found");
             throw new FileNotFoundException();
         }
 

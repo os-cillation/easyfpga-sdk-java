@@ -22,6 +22,7 @@ package easyfpga.communicator;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -114,10 +115,12 @@ public class FPGABinary {
         if (this.filename != null) {
             LOGGER.fine(String.format("Uploading given binary file: %s", filename));
 
-            /* create file handler */
+            /* create input stream from given filename */
             File file = new File(filename);
-
-            /* get filesize */
+            if (!file.exists()) {
+                LOGGER.severe("Given binary does not exist");
+                throw new FileNotFoundException("Given binary does not exist");
+            }
             inputStream = new FileInputStream(file);
         }
         else {
@@ -132,7 +135,7 @@ public class FPGABinary {
                 File file = new File(Util.getEasyFPGAFolder(), "tle.bin");
                 this.filename = file.getCanonicalPath();
 
-                LOGGER.log(Level.INFO, (String.format("Uploading binary file from home dir: %s",
+                LOGGER.info((String.format("Uploading binary file from home dir: %s",
                         filename)));
 
                 inputStream = new FileInputStream(file);
@@ -144,7 +147,7 @@ public class FPGABinary {
                 }
             }
             else {
-                LOGGER.log(Level.INFO, "Uploading binary file from jar");
+                LOGGER.info("Uploading binary file from jar");
             }
         }
 
@@ -162,6 +165,8 @@ public class FPGABinary {
         long tempChecksum = adler.getValue();
         adler.getValue();
         this.hashcode = (int) (tempChecksum);
+        LOGGER.fine(String.format("Loaded binary. Size: %d bytes ; Hash: 0x%X",
+                this.size, this.hashcode));
     }
 
     /**
@@ -215,6 +220,7 @@ public class FPGABinary {
             reply = vcp.receive(1);
 
             if (reply[0] != Protocol.OPC_ACK) {
+                LOGGER.severe(String.format("Received 0x%02X as reply on sector write", reply[0]));
                 return false;
             }
         }
