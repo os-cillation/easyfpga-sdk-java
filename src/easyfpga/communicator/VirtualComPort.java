@@ -19,11 +19,6 @@
 
 package easyfpga.communicator;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -52,13 +47,17 @@ public class VirtualComPort implements SerialPortEventListener {
 
     private SerialPort port;
     private String deviceName;
-    private final int baudrate = 3000000;
     private int serialNumber;
     private boolean searchBySerialNumber;
 
     private volatile LinkedBlockingQueue<Byte> receiveBuffer;
     private Communicator com;
     private ConfigurationFile configFile;
+
+    private static final int BAUDRATE = 3000000;
+
+    /** Timeout to avoid deadlock in serial event when port has been closed */
+    private static final int SERIAL_EVENT_READ_TIMEOUT_MILLIS = 500;
 
     private static final Logger LOGGER = Logger.getLogger(VirtualComPort.class.getName());
 
@@ -85,6 +84,16 @@ public class VirtualComPort implements SerialPortEventListener {
     }
 
     /**
+     * Construct with a given device name
+     *
+     * @param deviceName
+     */
+    public VirtualComPort(String deviceName) {
+        this();
+        this.deviceName = deviceName;
+    }
+
+    /**
      * Set the communicator reference which is required for calling the Communicator's
      * processInterruptEvent method.
      *
@@ -103,22 +112,14 @@ public class VirtualComPort implements SerialPortEventListener {
      */
     public void open() throws SerialPortException, CommunicationException {
         LOGGER.entering(getClass().getName(), "open");
-        /* find serial port if necessary */
-        if (deviceName == null) {
-            try {
-                deviceName = getVCPDevice();
-            }
-            catch (IOException e) {
-                SerialPortException ex;
-                ex = new SerialPortException(deviceName, "VirtualComPort.open()",
-                        SerialPortException.TYPE_PORT_NOT_FOUND);
-                LOGGER.log(Level.SEVERE, "Throwing exception", ex);
-                throw ex;
-            }
-        }
 
-        /* init and open the port */
-        setupPort();
+        if (deviceName == null) {
+            LOGGER.severe("Device name not set");
+        }
+        else {
+            /* init and open the port */
+            setupPort();
+        }
     }
 
     /**
@@ -131,7 +132,7 @@ public class VirtualComPort implements SerialPortEventListener {
         /* open and init port */
         port = new SerialPort(deviceName);
         port.openPort();
-        port.setParams(baudrate, 8, 1, 0);
+        port.setParams(BAUDRATE, 8, 1, 0);
         port.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | SerialPort.FLOWCONTROL_RTSCTS_OUT);
 
         /* add listener for reception */
@@ -141,21 +142,25 @@ public class VirtualComPort implements SerialPortEventListener {
     }
 
     /**
-     * Close the port after purging buffers
+     * Close the port
      */
     public void close() {
         LOGGER.entering(getClass().getName(), "close");
         try {
-            /* empty buffers (appears to fail on FT2232H) */
-            port.purgePort(SerialPort.PURGE_TXABORT);
-            port.purgePort(SerialPort.PURGE_RXABORT);
-
-            /* close port */
-            port.closePort();
+            /* close port if opened */
+            if (isOpened()) {
+                if (port.closePort()) {
+                    LOGGER.fine("Port successfully closed");
+                }
+                else {
+                    LOGGER.warning("Failed to close port");
+                }
+            }
         }
         catch (SerialPortException e) {
             e.printStackTrace();
         }
+        System.gc();
     }
 
     /**
@@ -164,7 +169,8 @@ public class VirtualComPort implements SerialPortEventListener {
      * @return true if port is opened
      */
     public boolean isOpened() {
-        return port.isOpened();
+        if (port != null) return port.isOpened();
+        else return false;
     }
 
     /**
@@ -177,6 +183,20 @@ public class VirtualComPort implements SerialPortEventListener {
             /* send byte stream */
             port.writeBytes(byteStream);
         } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Send a single byte to the VCP
+     *
+     * @param b byte to send
+     */
+    public void send(byte b) {
+        try {
+            port.writeByte(b);
+        }
+        catch (SerialPortException e) {
             e.printStackTrace();
         }
     }
@@ -218,8 +238,9 @@ public class VirtualComPort implements SerialPortEventListener {
         for (int i = 0; i < byteCount; i++) {
             try {
                 received[i] = receiveBuffer.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            }
+            catch (InterruptedException e) {
+                return null;
             }
         }
 
@@ -264,11 +285,15 @@ public class VirtualComPort implements SerialPortEventListener {
         try {
             return (byte[]) future.get(timeoutMillis, TimeUnit.MILLISECONDS);
         }
-        catch (InterruptedException e) {
+        catch (TimeoutException e) {
+            LOGGER.fine("Timeout occured during reception of " + byteCount + " bytes");
+            throw e;
+        }
+        catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        catch (ExecutionException e) {
-            e.printStackTrace();
+        finally {
+            future.cancel(true);
         }
         return null;
     }
@@ -327,7 +352,7 @@ public class VirtualComPort implements SerialPortEventListener {
                 /* read number of bytes given by event */
                 for (int i = 0; i < event.getEventValue(); i++) {
                     /* read and enqueue */
-                    receiveBuffer.put(port.readBytes(1)[0]);
+                    receiveBuffer.put(port.readBytes(1, SERIAL_EVENT_READ_TIMEOUT_MILLIS)[0]);
                 }
 
                 /* notify communicator (if present) */
@@ -343,7 +368,9 @@ public class VirtualComPort implements SerialPortEventListener {
                     thr.start();
                 }
 
-            } catch (Exception e) {
+            }
+            catch (SerialPortTimeoutException ignore) {}
+            catch (SerialPortException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -395,131 +422,5 @@ public class VirtualComPort implements SerialPortEventListener {
      */
     public LinkedBlockingQueue<Byte> getReceiveBuffer() {
         return receiveBuffer;
-    }
-
-    /**
-     * Search in /dev/ for a ttyUSB device if it is not already set. Test all available
-     * devices if a serial number is given.
-     *
-     * @return string containing the device path
-     * @throws IOException
-     * @throws SerialPortException
-     * @throws CommunicationException when the boards with a given serial number is not found
-     */
-    private String getVCPDevice() throws IOException, SerialPortException, CommunicationException {
-        LOGGER.entering(getClass().getName(), "getVCPDevice");
-
-        /* get array of all device files containing ttyUSB*/
-        File devFolder = new File("/dev");
-        File[] files = devFolder.listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.contains("ttyUSB");
-            }
-        });
-        if (files == null || files.length == 0) {
-            LOGGER.severe("No matching ttyUSB devices found");
-            throw new FileNotFoundException();
-        }
-
-        if (!searchBySerialNumber) {
-            /* return ttyUSBx if available (for debugging with interseptty) ... */
-            for (File file : files) {
-                if (file.getName().equals("ttyUSBx")) {
-                    LOGGER.fine("Found ttyUSBx");
-                    return file.getCanonicalPath();
-                }
-            }
-
-            /* test whether port can be opened */
-            Arrays.sort(files);
-            for (File device : files) {
-                boolean success = false;
-                this.deviceName = device.getCanonicalPath();
-                LOGGER.fine("Testing device " + this.deviceName);
-                try {
-                    setupPort();
-                    if (isOpened()) success = true;
-                }
-                catch (SerialPortException ex) {
-                    continue;
-                }
-                finally {
-                    if (success) close();
-                }
-                if (success) {
-                    LOGGER.info("Will return device: " + device.getCanonicalPath());
-                    /* return device path string of the lowest port number than can be opened */
-                    return device.getCanonicalPath();
-                }
-            }
-            throw new CommunicationException("No easyFPGA board found.");
-        }
-        /* if serial number is given */
-        else {
-            return searchBoardWithSerialNumber(files);
-        }
-    }
-
-
-
-    /**
-     * Search the given device files for a device with matching serial number
-     *
-     * @param deviceFiles to be examined
-     * @return string containing the device path of the matching device
-     * @throws IOException
-     * @throws SerialPortException
-     * @throws CommunicationException in case no devices matches
-     */
-    private String searchBoardWithSerialNumber(File[] deviceFiles) throws
-        IOException, SerialPortException, CommunicationException {
-        LOGGER.entering(getClass().getName(), "searchBoardWithSerialNumber");
-
-        int numberOfCheckedDevices = 0;
-
-        /* test all devices for serial number */
-        for (File deviceFile : deviceFiles) {
-
-            /* setup vcp and com */
-            this.deviceName = deviceFile.getCanonicalPath();
-            setupPort();
-            final Communicator com = new Communicator(this);
-
-            LOGGER.info("Will now check device: " + this.deviceName);
-
-            /* prepare ExecutorService that reads serial */
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Callable<Integer> task = new Callable<Integer>() {
-                public Integer call() {
-                    return com.readSerial();
-                }
-            };
-            Future<Integer> future = executor.submit(task);
-
-            numberOfCheckedDevices++;
-
-            /* compare the result */
-            try {
-                Integer serialRead = future.get(3000, TimeUnit.MILLISECONDS);
-                if (serialRead.equals(this.serialNumber)) {
-                    LOGGER.info("Found matching device: " + this.deviceName);
-                    return this.deviceName;
-                }
-            }
-            catch (TimeoutException toEx) {}
-            catch (InterruptedException inEx) {}
-            catch (ExecutionException exEx) {}
-            finally {
-                this.close();
-            }
-
-        }
-        CommunicationException ex = new CommunicationException(String.format(
-                "No device with serial number 0x%04X found. %d devices checked",
-                serialNumber, numberOfCheckedDevices));
-        LOGGER.log(Level.SEVERE, "Throwing exception", ex);
-        throw ex;
     }
 }
