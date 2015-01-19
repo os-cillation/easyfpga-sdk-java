@@ -36,7 +36,6 @@ import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 import easyfpga.ConfigurationFile;
-import easyfpga.exceptions.CommunicationException;
 
 /**
  * The Communicator's backend that manages the communication with the virtual com port (ttyUSB)

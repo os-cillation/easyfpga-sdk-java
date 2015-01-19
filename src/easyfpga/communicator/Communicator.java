@@ -394,6 +394,7 @@ public class Communicator {
             return readRegister(address);
         }
     }
+
     /**
      * Read from a register in the FPGA multiple times. Useful for reading Wishbone-Attached FIFOs.
      *

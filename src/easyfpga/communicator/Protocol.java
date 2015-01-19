@@ -33,6 +33,8 @@ public class Protocol {
     /* opcodes */
     public static final byte OPC_ACK            = (byte) 0x00;
     public static final byte OPC_NACK           = (byte) 0x11;
+    public static final byte OPC_DETECT         = (byte) 0xEE;
+    public static final byte OPC_DETECT_RE      = (byte) 0xFF;
     public static final byte OPC_SECTOR_WR      = (byte) 0x22;
     public static final byte OPC_CONF_FPGA      = (byte) 0x33;
     public static final byte OPC_SOC_SEL        = (byte) 0x44;
@@ -58,6 +60,8 @@ public class Protocol {
     /* frame lengths */
     public static final short LEN_ACK                   = 3;
     public static final short LEN_NACK                  = 4;
+    public static final short LEN_DETECT                = 1;
+    public static final short LEN_DETECT_RE             = 3;
     public static final short LEN_SECTOR_WR             = 4103;
     public static final short LEN_CONF_FPGA             = 1;
     public static final short LEN_SOC_SEL               = 1;
@@ -80,6 +84,12 @@ public class Protocol {
     public static final short LEN_SERIAL_WR             = 6;
     public static final short LEN_SERIAL_RD             = 1;
     public static final short LEN_SERIAL_RDRE           = 6;
+
+    /* detect reply constants */
+    public static final byte DETECT_RE_FPGA     = (byte) 0xEF;
+    public static final byte DETECT_RE_MCU      = (byte) 0x22;
+    public static final byte DETECT_RE_MCU_CONF = (byte) 0x33;
+
 
     /**
      * Error codes the FPGA transmits
