@@ -142,7 +142,7 @@ public class Communicator {
 
         /* close connection */
         exchangeHandlingThread.interrupt();
-        selectMCU();
+        if (activeIC == IC.FPGA) selectMCU();
         vcp.close();
 
         /* exception if there are still pendingReplies */
@@ -153,6 +153,7 @@ public class Communicator {
 
         /* run garbage collector to speed up application exit */
         System.gc();
+        LOGGER.finer("Connection closed");
     }
 
     /**
@@ -274,6 +275,7 @@ public class Communicator {
                 (reply[3] << 16) & 0xFF0000 |
                 (reply[4] << 24) & 0xFF000000;
 
+        LOGGER.finer(String.format("Will return serial 0x%08X", serial));
         return serial;
     }
 
