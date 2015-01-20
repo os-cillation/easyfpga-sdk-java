@@ -47,8 +47,6 @@ public class VirtualComPort implements SerialPortEventListener {
 
     private SerialPort port;
     private String deviceName;
-    private int serialNumber;
-    private boolean searchBySerialNumber;
 
     private volatile LinkedBlockingQueue<Byte> receiveBuffer;
     private Communicator com;
@@ -68,7 +66,6 @@ public class VirtualComPort implements SerialPortEventListener {
         this.receiveBuffer = new LinkedBlockingQueue<Byte>();
         this.configFile = new ConfigurationFile();
         this.deviceName = configFile.getValue(ConfigurationFile.USB_DEVICE_KEY);
-        this.searchBySerialNumber = false;
     }
 
     /**
@@ -77,10 +74,8 @@ public class VirtualComPort implements SerialPortEventListener {
      * @param serial number to be looked for
      */
     public VirtualComPort(int serial) {
-        this();
-        this.deviceName = null;
-        this.serialNumber = serial;
-        this.searchBySerialNumber = true;
+        //TODO
+        System.exit(1);
     }
 
     /**
@@ -108,11 +103,11 @@ public class VirtualComPort implements SerialPortEventListener {
      * will be searched.
      *
      * @throws SerialPortException
-     * @throws CommunicationException in case a serial is given but not found
      */
-    public void open() throws SerialPortException, CommunicationException {
+    public void open() throws SerialPortException {
         LOGGER.entering(getClass().getName(), "open");
 
+        /* open port */
         if (deviceName == null) {
             LOGGER.severe("Device name not set");
         }
@@ -333,9 +328,6 @@ public class VirtualComPort implements SerialPortEventListener {
             open();
         }
         catch (SerialPortException e) {
-            e.printStackTrace();
-        }
-        catch (CommunicationException e) {
             e.printStackTrace();
         }
     }

@@ -84,7 +84,7 @@ public class UploadTool {
         try {
             vcp.open();
         }
-        catch (SerialPortException | CommunicationException e) {
+        catch (SerialPortException e) {
             e.printStackTrace();
             System.exit(1);
         }
