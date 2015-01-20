@@ -285,7 +285,7 @@ public class FPGABinary {
         }
         catch (TimeoutException e) {
             LOGGER.info("Timeout during reception of ACK frame. Will now retry.");
-            vcp.purge();
+            vcp.reset();
             return upload(vcp);
         }
     }
@@ -307,7 +307,7 @@ public class FPGABinary {
             }
             catch (TimeoutException e) {
                 LOGGER.info("Timeout during reception of MCU status. Will now retry.");
-                vcp.purge();
+                vcp.reset();
                 break;
             }
 

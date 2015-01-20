@@ -797,7 +797,7 @@ public class Communicator {
         }
         catch (TimeoutException e) {
             LOGGER.info("Timeout receiving 4 bytes");
-            vcp.purge();
+            vcp.reset();
             vcp.setCommunicator(this);
             return isFPGAActive();
         }
@@ -823,7 +823,7 @@ public class Communicator {
         else {
             LOGGER.info(String.format("Received unexpected reply (%s). Will retry.",
                     Util.toHexString(reply)));
-            vcp.purge();
+            vcp.reset();
             vcp.setCommunicator(this);
             return isFPGAActive();
         }

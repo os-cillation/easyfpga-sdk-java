@@ -55,7 +55,7 @@ class ConfigurationStatus {
             }
             catch (TimeoutException e) {
                 LOGGER.info("Timeout receiving status");
-                vcp.purge();
+                vcp.reset();
                 download(vcp);
                 return;
             }
@@ -71,7 +71,7 @@ class ConfigurationStatus {
 
             if (parity_calculated != parity_received) {
                 LOGGER.info("Parity missmatch");
-                vcp.purge();
+                vcp.reset();
             }
         } while (parity_calculated != parity_received);
 

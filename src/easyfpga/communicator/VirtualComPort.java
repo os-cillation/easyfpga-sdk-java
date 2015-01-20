@@ -84,7 +84,7 @@ public class VirtualComPort implements SerialPortEventListener {
     }
 
     /**
-     * Construct with a given device name
+     * Construct with a given device name. Will ignore device name given in configuration file.
      *
      * @param deviceName
      */
@@ -117,7 +117,6 @@ public class VirtualComPort implements SerialPortEventListener {
             LOGGER.severe("Device name not set");
         }
         else {
-            /* init and open the port */
             setupPort();
         }
     }
@@ -299,9 +298,9 @@ public class VirtualComPort implements SerialPortEventListener {
     }
 
     /**
-     * Purge receive buffers
+     * Reset the port: Purge receive buffers, close and re-open the port
      */
-    public void purge() {
+    public void reset() {
         LOGGER.entering(getClass().getName(), "purge");
 
         /* remove listener and receive bytes in buffers */
