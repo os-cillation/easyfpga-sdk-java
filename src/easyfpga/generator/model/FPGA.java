@@ -170,9 +170,7 @@ public abstract class FPGA extends Component {
 
         /* switch to MCU if FPGA is active */
         Communicator com = new Communicator(vcp, this);
-        if (com.isFPGAActive()) {
-            com.selectMCU();
-        }
+        com.selectMCU();
 
         /* upload configuration file */
         if (!conf.upload(vcp)) {

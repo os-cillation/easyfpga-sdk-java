@@ -91,9 +91,7 @@ public class UploadTool {
 
         /* setup communicator and switch to MCU if necessary */
         com = new Communicator(vcp);
-        if (com.isFPGAActive()) {
-            com.selectMCU();
-        }
+        com.selectMCU();
     }
 
     private boolean upload(File binaryFile) {

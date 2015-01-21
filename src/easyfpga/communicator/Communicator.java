@@ -162,6 +162,12 @@ public class Communicator {
     public void selectMCU() {
         LOGGER.entering(getClass().getName(), "selectMCU");
 
+        /* check whether necessary */
+        if (!isFPGAActive()) {
+            activeIC = IC.MCU;
+            return;
+        }
+
         /* deactivate frame separator */
         this.frameSeparator.setActive(false);
 
@@ -780,7 +786,7 @@ public class Communicator {
      * @return true if FPGA is currently active
      * @throws CommunicationException
      */
-    public boolean isFPGAActive() {
+    private boolean isFPGAActive() {
         LOGGER.entering(getClass().getName(), "isFPGAActive");
 
         /* deactivate frame separator and send status read request */
