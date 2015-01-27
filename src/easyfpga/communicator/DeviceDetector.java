@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import jssc.SerialPortException;
 import jssc.SerialPortList;
 import easyfpga.exceptions.CommunicationException;
 import easyfpga.exceptions.CurrenlyConfiguringException;
@@ -291,10 +290,10 @@ public class DeviceDetector {
         try {
             vcp.open();
         }
-        catch (SerialPortException e) {
+        catch (CommunicationException e) {
             LOGGER.log(Level.SEVERE, "Exception while opening port", e);
             e.printStackTrace();
-            throw new CommunicationException(e.getMessage());
+            throw e;
         }
     }
 

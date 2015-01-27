@@ -36,6 +36,7 @@ import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 import easyfpga.ConfigurationFile;
+import easyfpga.exceptions.CommunicationException;
 
 /**
  * The Communicator's backend that manages the communication with the virtual com port (ttyUSB)
@@ -46,6 +47,8 @@ public class VirtualComPort implements SerialPortEventListener {
 
     private SerialPort port;
     private String deviceName;
+    private int serialNumber;
+    private boolean serialGiven;
 
     private volatile LinkedBlockingQueue<Byte> receiveBuffer;
     private Communicator com;
@@ -59,30 +62,36 @@ public class VirtualComPort implements SerialPortEventListener {
     private static final Logger LOGGER = Logger.getLogger(VirtualComPort.class.getName());
 
     /**
-     * Default constructor
+     * Default constructor, use device name given in configuration file or try to search
+     * for a responsive board.
      */
     public VirtualComPort() {
         this.receiveBuffer = new LinkedBlockingQueue<Byte>();
         this.configFile = new ConfigurationFile();
         this.deviceName = configFile.getValue(ConfigurationFile.USB_DEVICE_KEY);
+        this.serialGiven = false;
     }
 
     /**
-     * Construct VirtualComPort. Search for the board with the given serial number
+     * Construct VirtualComPort. Search for the board with the given serial number. Will ignore
+     * device name given in configuration file.
      *
-     * @param serial number to be looked for
+     * @param serial number to be searched
      */
     public VirtualComPort(int serial) {
-        //TODO
-        System.exit(1);
+        this();
+        this.deviceName = null;
+        this.serialGiven = true;
+        this.serialNumber = serial;
     }
 
     /**
-     * Construct with a given device name. Will ignore device name given in configuration file.
+     * Construct with a given device name as used by DeviceDetector. Will ignore device name
+     * given in configuration file.
      *
      * @param deviceName
      */
-    public VirtualComPort(String deviceName) {
+    protected VirtualComPort(String deviceName) {
         this();
         this.deviceName = deviceName;
     }
@@ -101,17 +110,32 @@ public class VirtualComPort implements SerialPortEventListener {
      * Open the port and set up the listener. If no serial port device name is set the device
      * will be searched.
      *
-     * @throws SerialPortException
+     * @throws CommunicationException
      */
-    public void open() throws SerialPortException {
+    public void open() throws CommunicationException {
         LOGGER.entering(getClass().getName(), "open");
+
+        /* find board with given serial */
+        DeviceDetector devDet = new DeviceDetector();
+        if (serialGiven) {
+            deviceName = devDet.findDevice(serialNumber);
+        }
+        /* find any board */
+        else if (deviceName == null) {
+            deviceName = devDet.findDevice();
+        }
 
         /* open port */
         if (deviceName == null) {
-            LOGGER.severe("Device name not set");
+            LOGGER.severe("Failed to find responsive board");
         }
         else {
-            setupPort();
+            try {
+                setupPort();
+            }
+            catch (SerialPortException ex) {
+                throw new CommunicationException(ex.getMessage());
+            }
         }
     }
 
@@ -326,7 +350,7 @@ public class VirtualComPort implements SerialPortEventListener {
         try {
             open();
         }
-        catch (SerialPortException e) {
+        catch (CommunicationException e) {
             e.printStackTrace();
         }
     }
