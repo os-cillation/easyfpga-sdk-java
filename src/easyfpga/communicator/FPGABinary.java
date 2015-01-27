@@ -50,6 +50,8 @@ public class FPGABinary {
     private int startSectorID;
     private int hashcode;
 
+    private final static long SECTOR_WRITE_TIMEOUT_MILLIS = 500;
+
     private final static Logger LOGGER = Logger.getLogger(FPGABinary.class.getName());
 
     /**
@@ -213,11 +215,21 @@ public class FPGABinary {
         /* for each sector call sector write command */
         System.out.println("Uploading FPGA binary ...");
         for (int sectorID = startSectorID; sectorID < requiredSectors+startSectorID; sectorID++) {
+
+            LOGGER.finer("Writing sector " + (sectorID-startSectorID+1) + "/"
+                                        + (requiredSectors-startSectorID));
+
             vcp.send(Protocol.getFrameSECTOR_WR(sectorID, sectors[sectorID-startSectorID]));
             printProgressBar(sectorID - startSectorID + 1, requiredSectors);
 
             /* receive reply */
-            reply = vcp.receive(1);
+            try {
+                reply = vcp.receive(1, SECTOR_WRITE_TIMEOUT_MILLIS);
+            }
+            catch (TimeoutException e) {
+                LOGGER.warning("Timeout during secttor write");
+                return false;
+            }
 
             if (reply[0] != Protocol.OPC_ACK) {
                 LOGGER.severe(String.format("Received 0x%02X as reply on sector write", reply[0]));

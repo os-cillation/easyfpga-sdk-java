@@ -303,7 +303,8 @@ public class VirtualComPort implements SerialPortEventListener {
             return (byte[]) future.get(timeoutMillis, TimeUnit.MILLISECONDS);
         }
         catch (TimeoutException e) {
-            LOGGER.fine("Timeout occured during reception of " + byteCount + " bytes");
+            LOGGER.fine(String.format("Timeout (%d ms) while receiving %d bytes",
+                                       timeoutMillis, byteCount));
             throw e;
         }
         catch (InterruptedException | ExecutionException e) {
