@@ -127,7 +127,9 @@ public class VirtualComPort implements SerialPortEventListener {
 
         /* open port */
         if (deviceName == null) {
-            LOGGER.severe("Failed to find responsive board");
+            CommunicationException e = new CommunicationException("No easyFPGA board detected");
+            LOGGER.log(Level.SEVERE, "Throwing exception", e);
+            throw e;
         }
         else {
             try {

@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.LogManager;
 
-import jssc.SerialPortException;
 import easyfpga.communicator.Communicator;
 import easyfpga.communicator.FPGABinary;
 import easyfpga.communicator.VirtualComPort;
@@ -85,7 +84,7 @@ public class UploadTool {
             vcp.open();
         }
         catch (CommunicationException e) {
-            e.printStackTrace();
+            System.out.println("ERROR: " + e.getMessage());
             System.exit(1);
         }
 
