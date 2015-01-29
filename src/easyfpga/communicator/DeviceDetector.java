@@ -292,7 +292,6 @@ public class DeviceDetector {
         }
         catch (CommunicationException e) {
             LOGGER.log(Level.SEVERE, "Exception while opening port", e);
-            e.printStackTrace();
             throw e;
         }
     }
