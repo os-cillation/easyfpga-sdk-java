@@ -50,8 +50,6 @@ public class FPGABinary {
     private int startSectorID;
     private int hashcode;
 
-    private final static long SECTOR_WRITE_TIMEOUT_MILLIS = 500;
-
     private final static Logger LOGGER = Logger.getLogger(FPGABinary.class.getName());
 
     /**
@@ -224,7 +222,7 @@ public class FPGABinary {
 
             /* receive reply */
             try {
-                reply = vcp.receive(1, SECTOR_WRITE_TIMEOUT_MILLIS);
+                reply = vcp.receive(1, Protocol.SECTOR_WRITE_TIMEOUT_MILLIS);
             }
             catch (TimeoutException e) {
                 LOGGER.warning("Timeout during secttor write");

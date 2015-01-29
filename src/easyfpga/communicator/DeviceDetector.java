@@ -43,25 +43,6 @@ public class DeviceDetector {
     /** regular expression to choose devices to test */
     private final String DEVICE_PATH_REGEX = "(ttyUSB\\d+)|(COM\\d+)";
 
-    /** duration (in ms) to wait for detect reply until probing next device */
-    private final long DETECT_TIMEOUT_MILLIS = 200;
-
-    /** timeout (in ms) for switching to MCU */
-    private final long SWITCH_TO_MCU_TIMEOUT_MILLIS = 500;
-
-    /** maximum duration allowed for configuration */
-    private final long CURRENTLY_CONFIGURING_TIMEOUT_MILLIS = 10000;
-
-    /** timeout (in ms) for reading serial */
-    private final long READ_SERIAL_TIMEOUT_MILLIS = 200;
-
-    /** duration (in ms) until polling whether the board is still configuring */
-    private final long CURRENTLY_CONFIGURING_SLEEP_MILLIS = 200;
-
-    /** number of retries on parity errors */
-    private final short RETRIES = 5;
-
-
     private final static Logger LOGGER = Logger.getLogger(DeviceDetector.class.getName());
 
     /**
@@ -113,7 +94,8 @@ public class DeviceDetector {
     private Map<String, Integer> findCommunicatingBoards() {
 
         final int POLL_COUNT_MAX =
-            (int) (CURRENTLY_CONFIGURING_TIMEOUT_MILLIS/ CURRENTLY_CONFIGURING_SLEEP_MILLIS);
+            (int) (Protocol.CURRENTLY_CONFIGURING_TIMEOUT_MILLIS /
+                    Protocol.CURRENTLY_CONFIGURING_SLEEP_MILLIS);
 
         /* device path vs. serial number */
         Map<String, Integer> deviceMap = new HashMap<String, Integer>();
@@ -158,7 +140,7 @@ public class DeviceDetector {
                     catch (CurrenlyConfiguringException ex) {
                         configuring = true;
                         try {
-                            Thread.sleep(CURRENTLY_CONFIGURING_SLEEP_MILLIS);
+                            Thread.sleep(Protocol.CURRENTLY_CONFIGURING_SLEEP_MILLIS);
                         }
                         catch (InterruptedException ignored) {}
                     }
@@ -213,7 +195,7 @@ public class DeviceDetector {
 
             /* receive with timeout */
             try {
-                detectReply = vcp.receive(Protocol.LEN_DETECT_RE, DETECT_TIMEOUT_MILLIS);
+                detectReply = vcp.receive(Protocol.LEN_DETECT_RE, Protocol.DETECT_TIMEOUT_MILLIS);
             }
             catch (TimeoutException e) {
                 return false;
@@ -244,7 +226,7 @@ public class DeviceDetector {
             }
 
             /* break if too many retries */
-            if (detectRetry > RETRIES && !parityFine) {
+            if (detectRetry > Protocol.RETRIES && !parityFine) {
                 LOGGER.warning("Parity errors for " + detectRetry + " retries");
                 return false;
             }
@@ -257,7 +239,7 @@ public class DeviceDetector {
 
             case Protocol.DETECT_RE_FPGA:
                 /* switch to MCU */
-                for (int switchRetry = 0; switchRetry < RETRIES; switchRetry++) {
+                for (int switchRetry = 0; switchRetry < Protocol.RETRIES; switchRetry++) {
                     if(switchToMCU()) {
                         return true;
                     }
@@ -315,7 +297,7 @@ public class DeviceDetector {
 
         /* reply */
         byte[] reply = null;
-        reply = vcp.receive(Protocol.LEN_SERIAL_RDRE, READ_SERIAL_TIMEOUT_MILLIS);
+        reply = vcp.receive(Protocol.LEN_SERIAL_RDRE, Protocol.SERIAL_READ_TIMEOUT_MILLIS);
 
         /* opcode check */
         if (reply[0] != Protocol.OPC_SERIAL_RDRE) return null;
@@ -348,7 +330,7 @@ public class DeviceDetector {
         /* reply */
         byte[] reply = null;
         try {
-            reply = vcp.receive(Protocol.LEN_MCU_SEL, SWITCH_TO_MCU_TIMEOUT_MILLIS);
+            reply = vcp.receive(Protocol.LEN_MCU_SEL, Protocol.SELECT_MCU_TIMEOUT_MILLIS);
         }
         catch (TimeoutException e) {
             LOGGER.warning("Timeout occured");

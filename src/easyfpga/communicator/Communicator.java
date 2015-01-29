@@ -61,12 +61,6 @@ public class Communicator {
     /** number of reads performed with a certain callback */
     private Hashtable<Callback, Integer> callbackReadCount;
 
-    private final long REGISTER_READ_TIMEOUT_MILLIS = 500;
-    private final long SERIAL_READ_TIMEOUT_MILLIS = 100;
-    private final long CLOSE_CONNECTION_TIMEOUT_MILLIS = 3000;
-    private final long SELECT_MCU_TIMEOUT_MILLIS = 100;
-    private final long IS_FPGA_ACTIVE_TIMEOUT_MILLIS = 100;
-
     /**
      * @param com VirtualComPort
      * @param fpga instance of the FPGA to communicate with
@@ -133,7 +127,7 @@ public class Communicator {
             try {
                 Thread.sleep(1);
                 elapsedMillis++;
-                if (elapsedMillis >= CLOSE_CONNECTION_TIMEOUT_MILLIS) {
+                if (elapsedMillis >= Protocol.CLOSE_CONNECTION_TIMEOUT_MILLIS) {
                     break;
                 }
             }
@@ -181,7 +175,7 @@ public class Communicator {
             /* assume ACK, receive 3 bytes. 1s timeout. */
             byte[] reply;
             try {
-                reply = vcp.receive(Protocol.LEN_ACK, SELECT_MCU_TIMEOUT_MILLIS);
+                reply = vcp.receive(Protocol.LEN_ACK, Protocol.SELECT_MCU_TIMEOUT_MILLIS);
             }
             catch (TimeoutException e) {
                 success = false;
@@ -196,7 +190,7 @@ public class Communicator {
             /* if NACK received receive remaining byte and retry */
             else if (reply[0] == Protocol.OPC_NACK) {
                 try {
-                    vcp.receive(1, SELECT_MCU_TIMEOUT_MILLIS);
+                    vcp.receive(1, Protocol.SELECT_MCU_TIMEOUT_MILLIS);
                 }
                 catch (TimeoutException e) {
                     LOGGER.warning("Timeout during reception of remaining byte of NACK frame");
@@ -247,18 +241,18 @@ public class Communicator {
         do {
             /* request/reply reading only length of NACK (which would be sent by SoC) */
             vcp.send(Protocol.getFrameSERIAL_RD());
-            replyTmp = vcp.receive(Protocol.LEN_NACK, SERIAL_READ_TIMEOUT_MILLIS);
+            replyTmp = vcp.receive(Protocol.LEN_NACK, Protocol.SERIAL_READ_TIMEOUT_MILLIS);
 
             /* on reception of NACK switch to MCU and retry */
             if (replyTmp[0] == Protocol.OPC_NACK) {
                 selectMCU();
                 vcp.send(Protocol.getFrameSERIAL_RD());
-                replyTmp = vcp.receive(Protocol.LEN_NACK, SERIAL_READ_TIMEOUT_MILLIS);
+                replyTmp = vcp.receive(Protocol.LEN_NACK, Protocol.SERIAL_READ_TIMEOUT_MILLIS);
             }
 
             /* mcu is active, receive remaining bytes */
             remaining = vcp.receive(Protocol.LEN_SERIAL_RDRE - Protocol.LEN_NACK,
-                                        SERIAL_READ_TIMEOUT_MILLIS);
+                                        Protocol.SERIAL_READ_TIMEOUT_MILLIS);
 
             System.arraycopy(replyTmp, 0, reply, 0, Protocol.LEN_NACK);
             System.arraycopy(remaining, 0, reply, Protocol.LEN_NACK, remaining.length);
@@ -365,9 +359,9 @@ public class Communicator {
             receiveBufferChanged();
 
             /* retry after timeout */
-            if (System.currentTimeMillis() - startMillis > REGISTER_READ_TIMEOUT_MILLIS) {
-                LOGGER.warning("Register read took longer than " + REGISTER_READ_TIMEOUT_MILLIS +
-                        " ms. Will now retry.");
+            if (System.currentTimeMillis() - startMillis > Protocol.REGISTER_READ_TIMEOUT_MILLIS) {
+                LOGGER.warning("Register read took longer than " +
+                            Protocol.REGISTER_READ_TIMEOUT_MILLIS + " ms. Will now retry.");
                 return readRegister(address);
             }
 
@@ -800,7 +794,7 @@ public class Communicator {
         /* use the reply to determine active IC */
         byte[] reply;
         try {
-            reply = vcp.receive(Protocol.LEN_NACK, IS_FPGA_ACTIVE_TIMEOUT_MILLIS);
+            reply = vcp.receive(Protocol.LEN_NACK, Protocol.DETECT_TIMEOUT_MILLIS);
         }
         catch (TimeoutException e) {
             LOGGER.info("Timeout receiving 4 bytes");
@@ -818,7 +812,7 @@ public class Communicator {
             /* if mcu is active receive remaining bytes */
             try {
                 vcp.receive(Protocol.LEN_STATUS_RDRE - Protocol.LEN_NACK,
-                                IS_FPGA_ACTIVE_TIMEOUT_MILLIS);
+                                Protocol.DETECT_TIMEOUT_MILLIS);
             }
             catch (TimeoutException e) {
                 LOGGER.warning("Timeout during reception of remaining bytes from MCU");

@@ -90,6 +90,36 @@ public class Protocol {
     public static final byte DETECT_RE_MCU      = (byte) 0x22;
     public static final byte DETECT_RE_MCU_CONF = (byte) 0x33;
 
+    /* timeout and retry constants */
+    /** duration (in ms) to wait for detect reply until probing next device */
+    public static final long DETECT_TIMEOUT_MILLIS = 200;
+
+    /** timeout (in ms) for switching to MCU */
+    public static final long SELECT_MCU_TIMEOUT_MILLIS = 500;
+
+    public static final long STATUS_READ_TIMEOUT_MILLIS = 300;
+
+
+    public final static long SECTOR_WRITE_TIMEOUT_MILLIS = 500;
+
+    /** timeout (in ms) for reading serial */
+    public static final long SERIAL_READ_TIMEOUT_MILLIS = 200;
+
+    /** maximum duration (in ms) allowed for configuration */
+    public static final long CURRENTLY_CONFIGURING_TIMEOUT_MILLIS = 10000;
+
+    /** duration (in ms) until polling whether the board is still configuring */
+    public static final long CURRENTLY_CONFIGURING_SLEEP_MILLIS = 200;
+
+    /** timeout (in ms) for reading a single register */
+    public static final long REGISTER_READ_TIMEOUT_MILLIS = 500;
+
+    /** timeout (in ms) for closing the connection to a board */
+    public static final long CLOSE_CONNECTION_TIMEOUT_MILLIS = 3000;
+
+    /** number of retries on parity errors */
+    public static final short RETRIES = 5;
+
 
     /**
      * Error codes the FPGA transmits

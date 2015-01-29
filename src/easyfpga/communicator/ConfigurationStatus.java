@@ -32,8 +32,6 @@ class ConfigurationStatus {
     private boolean fpgaConfigured;
     private int hash;
 
-    private static final long STATUS_READ_TIMEOUT_MILLIS = 300;
-
     private static final Logger LOGGER = Logger.getLogger(ConfigurationStatus.class.getName());
 
     /**
@@ -54,7 +52,7 @@ class ConfigurationStatus {
 
             /* wait for reply: STATUS_RDRE */
             try {
-                reply = vcp.receive(Protocol.LEN_STATUS_RDRE, STATUS_READ_TIMEOUT_MILLIS);
+                reply = vcp.receive(Protocol.LEN_STATUS_RDRE, Protocol.STATUS_READ_TIMEOUT_MILLIS);
                 LOGGER.finer("Status read reply: " + Util.toHexString(reply));
             }
             catch (TimeoutException e) {
