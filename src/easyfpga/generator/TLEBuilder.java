@@ -37,9 +37,6 @@ public class TLEBuilder {
     private FPGA fpga;
     private Map<Pin, String> signals;
 
-    /** set to true to see details during the build process */
-    private final boolean DBG_OUTPUT = false;
-
     /**
      * @param fpga instance to be processed
      */
@@ -54,12 +51,6 @@ public class TLEBuilder {
      * @return a string representation of the TLE
      */
     public String buildTLE() {
-
-        if (DBG_OUTPUT) {
-            System.out.println("<<----- TLEBuilder.buildTLE() ----->>");
-            System.out.println("FPGA Connections:");
-            System.out.println(fpga.getConnectionsString());
-        }
 
         StringBuilder builder = new StringBuilder();
         Scanner scanner = new Scanner(TLEBuilder.class.getResourceAsStream("/templates/tle_template.vhd"));
@@ -88,7 +79,7 @@ public class TLEBuilder {
                 continue;
             }
             line = line.replaceAll("%name", fpga.getName());
-            builder.append(String.format("%s\n", line));
+            builder.append(String.format("%s%n", line));
         }
         scanner.close();
         return builder.toString();
@@ -101,12 +92,6 @@ public class TLEBuilder {
      */
     private void buildUserGPIOs(StringBuilder builder) {
 
-        if (DBG_OUTPUT) {
-            System.out.println("<<----- TLEBuilder.buildUserGPIOs() ----->>");
-            System.out.println("Connections out: " + fpga.getConnectionsOut(fpga));
-            System.out.println("Connections in:  " + fpga.getConnectionsIn(fpga));
-        }
-
         /* inputs (outputs of the FPGA component) */
         for (Iterator<Connection> iterator = fpga.getConnectionsOut(fpga).iterator();
                 iterator.hasNext();) {
@@ -115,7 +100,7 @@ public class TLEBuilder {
             Pin srcPin = connection.getSrc();
 
             if (srcPin.getComponent() instanceof FPGA) {
-                builder.append(String.format("      %s : %s std_logic;\n",
+                builder.append(String.format("      %s : %s std_logic;%n",
                                                 srcPin.getName(), srcPin.getType()));
             }
         }
@@ -129,12 +114,12 @@ public class TLEBuilder {
             for (Pin pin : connection.getSinks()) {
 
                 if (pin.getComponent() instanceof FPGA) {
-                    builder.append(String.format("      %s : %s std_logic;\n",
+                    builder.append(String.format("      %s : %s std_logic;%n",
                                                 pin.getName(), pin.getType()));
                 }
             }
         }
-        builder.append("\n");
+        builder.append(System.lineSeparator());
     }
 
     /**
@@ -143,10 +128,6 @@ public class TLEBuilder {
      * @param builder top-level-entity StringBuilder
      */
     private void buildWBSlaves(StringBuilder builder) {
-
-        if (DBG_OUTPUT) {
-            System.out.println("<<----- TLEBuilder.buildWBSlaves() ----->");
-        }
 
         /* inputs: wbs_<n>_in_s */
         builder.append("   signal ");
@@ -157,7 +138,7 @@ public class TLEBuilder {
                 builder.append(", ");
             }
         }
-        builder.append(" : wbs_in_type;\n");
+        builder.append(String.format(" : wbs_in_type;%n"));
 
         /* outputs: wbs_<n>_out_s */
         builder.append("   signal ");
@@ -168,7 +149,7 @@ public class TLEBuilder {
                 builder.append(", ");
             }
         }
-        builder.append(" : wbs_out_type;\n");
+        builder.append(String.format(" : wbs_out_type;%n"));
     }
 
     /**
@@ -215,7 +196,7 @@ public class TLEBuilder {
                 signals.put(sink, signalName);
             }
 
-            builder.append(String.format("   signal %s : std_logic;\n", signalName));
+            builder.append(String.format("   signal %s : std_logic;%n", signalName));
         }
     }
 
@@ -226,16 +207,12 @@ public class TLEBuilder {
      */
     private void buildWBSlavesIntercon(StringBuilder builder) {
 
-        if (DBG_OUTPUT) {
-            System.out.println("<<----- TLEBuilder.buildWBSlavesIntercon() ----->>");
-        }
-
         for (Iterator<Component> iterator = fpga.getComponents().iterator(); iterator.hasNext();) {
             Component component = iterator.next();
-            builder.append(String.format("      wbs%1$d_out => wbs%1$d_out_s,\n", component.getIndex()));
+            builder.append(String.format("      wbs%1$d_out => wbs%1$d_out_s,%n", component.getIndex()));
             builder.append(String.format("      wbs%1$d_in => wbs%1$d_in_s", component.getIndex()));
             if (iterator.hasNext()) {
-                builder.append(",\n");
+                builder.append(String.format(",%n"));
             }
         }
     }
@@ -246,10 +223,6 @@ public class TLEBuilder {
      * @param builder top-level-entity StringBuilder
      */
     private void buildCores(StringBuilder builder) {
-
-        if (DBG_OUTPUT) {
-            System.out.println("<<----- TLEBuilder.buildCores() ----->>");
-        }
 
         for (Component component : fpga.getComponents()) {
             buildCore(builder, component);
@@ -264,11 +237,7 @@ public class TLEBuilder {
      */
     private void buildCore(StringBuilder builder, Component component) {
 
-        if (DBG_OUTPUT) {
-            System.out.println("Building core: " + component.toString());
-        }
-
-        builder.append("\n");
+        builder.append(System.lineSeparator());
         /* add direct FPGA GPIO connections of portmap signals */
         addCoreGPIOs(builder, component);
 
@@ -288,11 +257,11 @@ public class TLEBuilder {
             if (line.contains("%generic_map")) {
                 String genericMap = component.getGenericMap();
                 if (genericMap != null) {
-                    builder.append("   generic map (\n");
+                    builder.append(String.format("   generic map (%n"));
                     for (Scanner sc = new Scanner(genericMap); sc.hasNextLine();) {
-                        builder.append(String.format("      %s\n", sc.nextLine().trim()));
+                        builder.append(String.format("      %s%n", sc.nextLine().trim()));
                     }
-                    builder.append("   )\n");
+                    builder.append(String.format("   )%n"));
                 }
                 continue;
             }
@@ -310,7 +279,7 @@ public class TLEBuilder {
                     /* connect all sinks */
                     for (Pin snkPin : connection.getSinks()) {
                         if (snkPin.getComponent() == component) {
-                            builder.append(String.format("      %s => %s,\n",
+                            builder.append(String.format("      %s => %s,%n",
                                                             snkPin.getName(), srcName));
                         }
                     }
@@ -328,7 +297,7 @@ public class TLEBuilder {
                         sinkName = signals.get(srcPin);
                     }
 
-                    builder.append(String.format("      %s => %s,\n", srcPin.getName(), sinkName));
+                    builder.append(String.format("      %s => %s,%n", srcPin.getName(), sinkName));
                 }
 
                 /* remove last comma */
@@ -336,7 +305,7 @@ public class TLEBuilder {
 
                 continue;
             }
-            builder.append(String.format("%s\n", line));
+            builder.append(String.format("%s%n", line));
         }
         scanner.close();
     }
@@ -362,13 +331,13 @@ public class TLEBuilder {
 
                 /* add comment before the first line */
                 if (!inputComment) {
-                    builder.append(String.format("-- GPIO inputs of %s signals\n", coreName));
+                    builder.append(String.format("-- GPIO inputs of %s signals%n", coreName));
                     inputComment = true;
                 }
 
                 String srcGPIO = connection.getSrc().getName();
                 String sinkSignalName = connection.getSignalName();
-                builder.append(String.format("%s <= %s;\n", sinkSignalName, srcGPIO));
+                builder.append(String.format("%s <= %s;%n", sinkSignalName, srcGPIO));
             }
         }
 
@@ -383,13 +352,13 @@ public class TLEBuilder {
                 if (sink.getComponent() instanceof FPGA) {
                     /* add comment before the first line */
                     if (!outputComment) {
-                        builder.append(String.format("-- GPIO outputs of %s signals\n", coreName));
+                        builder.append(String.format("-- GPIO outputs of %s signals%n", coreName));
                         outputComment = true;
                     }
 
                     String sinkGPIO = sink.getName();
                     String srcSignalName = connection.getSignalName();
-                    builder.append(String.format("%s <= %s;\n", sinkGPIO, srcSignalName));
+                    builder.append(String.format("%s <= %s;%n", sinkGPIO, srcSignalName));
                 }
             }
         }
