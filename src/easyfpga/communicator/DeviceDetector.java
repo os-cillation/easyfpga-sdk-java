@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Observable;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,13 +31,13 @@ import java.util.regex.Pattern;
 
 import jssc.SerialPortList;
 import easyfpga.exceptions.CommunicationException;
-import easyfpga.exceptions.CurrenlyConfiguringException;
+import easyfpga.exceptions.CurrentlyConfiguringException;
 
 /**
  * Used by VirtualComPort to determine device files of easyFPGA boards prior to opening them.
  * Ensures that the returned device has MCU active and is currently not configuring anymore.
  */
-public class DeviceDetector {
+public class DeviceDetector extends Observable {
 
     private VirtualComPort vcp;
 
@@ -137,7 +138,12 @@ public class DeviceDetector {
                         }
                     }
                     /* sleep and retry when currently configuring */
-                    catch (CurrenlyConfiguringException ex) {
+                    catch (CurrentlyConfiguringException ex) {
+
+                        /* notify observers about configuration in progress */
+                        super.setChanged();
+                        super.notifyObservers(devicePath);
+
                         configuring = true;
                         try {
                             Thread.sleep(Protocol.CURRENTLY_CONFIGURING_SLEEP_MILLIS);
@@ -174,7 +180,7 @@ public class DeviceDetector {
         }
 
     /**
-     * Probe whether the device currently attacted to VPC communicates. If so, establish
+     * Probe whether the device currently attached to VPC communicates. If so, establish
      * a well-defined state (MCU active)
      *
      * @return true when the devices responds
@@ -253,7 +259,7 @@ public class DeviceDetector {
 
             case Protocol.DETECT_RE_MCU_CONF:
                 LOGGER.fine("MCU currently configuring");
-                throw new CurrenlyConfiguringException();
+                throw new CurrentlyConfiguringException();
 
             default:
                 LOGGER.warning("Received unexpected IC identifier");

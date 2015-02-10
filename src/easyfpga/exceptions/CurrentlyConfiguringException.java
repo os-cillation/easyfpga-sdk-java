@@ -22,7 +22,7 @@ package easyfpga.exceptions;
 /**
  * Exception to constitute the board is currently configuring the FPGA
  */
-public class CurrenlyConfiguringException extends CommunicationException {
+public class CurrentlyConfiguringException extends CommunicationException {
 
     private static final long serialVersionUID = 1L;
 

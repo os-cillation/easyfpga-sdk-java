@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Observable;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +38,7 @@ import easyfpga.Util;
  * Represents the binary that configures the FPGA, manages its upload and triggers the FPGA
  * configuration.
  */
-public class FPGABinary {
+public class FPGABinary extends Observable {
 
     private String filename;
 
@@ -196,6 +197,10 @@ public class FPGABinary {
         /* compare hashcode and abort upload on match */
         if (this.hashcode == remoteHash) {
             LOGGER.fine("Hashcode match - aborting upload");
+
+            /* notify observer by passing a true boolean */
+            super.setChanged();
+            super.notifyObservers(new Boolean(true));
             return true;
         }
 
@@ -212,13 +217,20 @@ public class FPGABinary {
 
         /* for each sector call sector write command */
         System.out.println("Uploading FPGA binary ...");
+        int progressPercent = 0;
         for (int sectorID = startSectorID; sectorID < requiredSectors+startSectorID; sectorID++) {
 
             LOGGER.finer("Writing sector " + (sectorID-startSectorID+1) + "/"
                                         + (requiredSectors-startSectorID));
 
             vcp.send(Protocol.getFrameSECTOR_WR(sectorID, sectors[sectorID-startSectorID]));
-            printProgressBar(sectorID - startSectorID + 1, requiredSectors);
+
+            /* calculate percentage, print bar and notify observers */
+            progressPercent = (int) (100 * ((sectorID - startSectorID + 1) /
+                                    (float) requiredSectors));
+            printProgressBar(progressPercent);
+            super.setChanged();
+            super.notifyObservers(new Integer(progressPercent));
 
             /* receive reply */
             try {
@@ -351,32 +363,21 @@ public class FPGABinary {
     }
 
     /**
-     * Print a progress bar
+     * Print a progress bar from a given percentage
      *
-     * @param progress
-     * @param max
+     * @param progressPercent
      */
-    private void printProgressBar(int progress, int max) {
-        int donePercent;
-        int todoPercent;
-        String bar;
+    private void printProgressBar(int progressPercent) {
 
-        /* calculate percentages */
-        donePercent = 100 * progress / max;
-        todoPercent = 100 - donePercent;
-
-        /* compose string */
-        bar = "\r[";
-        donePercent--;
-        for(int i = 0; i < donePercent; i++) {
+        String bar = "\r[";
+        for(int i = 0; i < progressPercent; i++) {
             bar += "-";
         }
         bar += ">";
-        for(int i = 0; i < todoPercent; i++) {
+        for(int i = 0; i < 100 - progressPercent; i++) {
             bar += " ";
         }
         bar += "]";
-
         System.out.print(bar);
     }
 

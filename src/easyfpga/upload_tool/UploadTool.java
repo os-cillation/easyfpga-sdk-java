@@ -42,42 +42,56 @@ public class UploadTool {
     public static void main(String[] args) {
 
         UploadTool uploadTool = new UploadTool();
-
-        /* check argument count */
         int argc = args.length;
-        if (argc != 1) {
+
+        /* no arguments -> gui usage*/
+        if (argc == 0) {
+            UploadGUI ui = new UploadGUI();
+            ui.setVisible(true);
+        }
+
+        /* binary given -> cli usage */
+        else if (argc == 1) {
+            /* check whether file exists */
+            String fileName = args[0];
+            File binaryFile = new File(fileName);
+            if (!binaryFile.exists()) {
+                System.out.println("File not found: " + fileName);
+                System.exit(1);
+            }
+
+            /* open vcp */
+            uploadTool.setup();
+
+            /* upload binary, configure and select FPGA */
+            int exitValue;
+            if (uploadTool.upload(binaryFile) &&
+                uploadTool.configure()) {
+
+                System.out.println("SUCCESS");
+                exitValue = 0;
+            }
+            else {
+                System.out.println("FAILED!");
+                exitValue = 1;
+            }
+
+            uploadTool.close();
+            System.exit(exitValue);
+        }
+
+        /* more than one argument */
+        else {
             printUsage();
             System.exit(1);
         }
-
-        /* check whether file exists */
-        String fileName = args[0];
-        File binaryFile = new File(fileName);
-        if (!binaryFile.exists()) {
-            System.out.println("File not found: " + fileName);
-            System.exit(1);
-        }
-
-        /* upload binary, configure and select FPGA */
-        int exitValue;
-        if (uploadTool.upload(binaryFile) &&
-            uploadTool.configure()) {
-
-            System.out.println("SUCCESS");
-            exitValue = 0;
-        }
-        else {
-            System.out.println("FAILED!");
-            exitValue = 1;
-        }
-
-        uploadTool.close();
-        System.exit(exitValue);
     }
 
     public UploadTool() {
         disableLogging();
+    }
 
+    private void setup() {
         /* setup vcp */
         vcp = new VirtualComPort();
         try {

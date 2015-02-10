@@ -91,7 +91,7 @@ public class VirtualComPort implements SerialPortEventListener {
      *
      * @param deviceName
      */
-    protected VirtualComPort(String deviceName) {
+    public VirtualComPort(String deviceName) {
         this();
         this.deviceName = deviceName;
     }
