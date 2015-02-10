@@ -55,7 +55,7 @@
 	<!-- create manifest for setting main class to upload tool -->
 	<target name="manifest">
 		<manifest file="${build.dir}/MANIFEST.MF">
-			<attribute name="Main-Class" value="easyfpga.UploadTool"/>
+			<attribute name="Main-Class" value="easyfpga.upload_tool.UploadTool"/>
 		</manifest>
 	</target>
 

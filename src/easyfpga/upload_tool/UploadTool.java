@@ -17,7 +17,7 @@
  *
  */
 
-package easyfpga;
+package easyfpga.upload_tool;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
