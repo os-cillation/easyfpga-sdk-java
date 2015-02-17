@@ -1,8 +1,16 @@
 # Upload Tool
 The easyFPGA board can also be used without using the SDK. Any FPGA-binary can be uploaded to the board using the upload tool which is included in the jar archive `easyFPGA.jar`.
 
+![Upload Tool GUI](images/upload_tool.png)
+
 ## Upload Binary
-Any binary created as described below can be uploaded via USB as follows:
+Any binary created as described below can be uploaded via USB using the upload tool GUI. To start the GUI, run
+
+```
+java -jar easyFPGA.jar
+```
+
+without any arguments. It is also possible to use the command line by simply giving the filename of the binary as an argument:
 
 ```
 java -jar easyFPGA.jar BINARY_NAME
