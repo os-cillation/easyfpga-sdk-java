@@ -28,7 +28,7 @@ There are two LEDs. The red one indicates that the board is connected to a power
 For programming and debugging the FPGA using the JTAG interface, connect a Xilinx (or compatible) JTAG adapter to the designated through-hole pads.
 
 ## PDI
-The microcontroller (an Atmel atxmega128a4u) can be programmed using the PDI interface. For an easier and faster approach see the [[MCU Update]] page.
+The microcontroller (an Atmel atxmega128a4u) can be programmed using the PDI interface. For an easier and faster approach see the [MCU Update](mcu_update.md) page.
 
 ## USB Shield
 In some cases it might be useful to be able to connect the USB shield to a metal housing. For this purpose use the hole next to the USB socket.

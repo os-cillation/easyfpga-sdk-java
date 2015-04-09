@@ -16,3 +16,5 @@ An easyFPGA board connected via USB will appear as a ttyUSB device. For getting 
 ```
 $ sudo usermod -aG dialout USERNAME
 ```
+
+This will take effect only after logging off and on again or rebooting your system.
