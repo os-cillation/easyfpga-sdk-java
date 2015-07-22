@@ -297,11 +297,14 @@ public class TLEBuilder {
                         sinkName = signals.get(srcPin);
                     }
 
-                    builder.append(String.format("      %s => %s,%n", srcPin.getName(), sinkName));
-                }
+                    builder.append(String.format("      %s => %s", srcPin.getName(), sinkName));
 
-                /* remove last comma */
-                builder.deleteCharAt(builder.length() - 2);
+                    /* only append comma if there are more connections */
+                    if (iterator.hasNext()) {
+                        builder.append(String.format(","));
+                    }
+                    builder.append(String.format("%n"));
+                }
 
                 continue;
             }
