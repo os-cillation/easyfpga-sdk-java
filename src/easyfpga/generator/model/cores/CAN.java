@@ -22,6 +22,7 @@ package easyfpga.generator.model.cores;
 import java.io.File;
 
 import easyfpga.ConfigurationFile;
+import easyfpga.Util;
 import easyfpga.communicator.MultiRegisterReadCallback;
 import easyfpga.communicator.RegisterReadCallback;
 import easyfpga.exceptions.CANException;
@@ -948,39 +949,39 @@ public class CAN extends Core {
         StringBuilder sb = new StringBuilder();
 
         sb.append(super.toString());
-        sb.append("\nExtended mode:                " + this.extendedMode + "\n");
+        sb.append(Util.LS + "Extended mode:                " + this.extendedMode + Util.LS);
 
         sb.append("Bus status:                   ");
-        if (bs) sb.append("bus off, no activities\n");
-        else    sb.append("bus on\n");
+        if (bs) sb.append("bus off, no activities" + Util.LS);
+        else    sb.append("bus on" + Util.LS);
 
         sb.append("Error status:                 ");
-        if (es) sb.append("error; at least one of the error counters has reached the limit\n");
-        else    sb.append("ok\n");
+        if (es) sb.append("error; at least one of the error counters has reached the limit" + Util.LS);
+        else    sb.append("ok" + Util.LS);
 
         sb.append("Transmit status:              ");
-        if (ts) sb.append("transmission in progress\n");
-        else    sb.append("idle\n");
+        if (ts) sb.append("transmission in progress" + Util.LS);
+        else    sb.append("idle" + Util.LS);
 
         sb.append("Receive status:               ");
-        if (rs) sb.append("reception in progress\n");
-        else    sb.append("idle\n");
+        if (rs) sb.append("reception in progress" + Util.LS);
+        else    sb.append("idle" + Util.LS);
 
         sb.append("Transmission complete status: ");
-        if (tcs)    sb.append("last requested transmission has been successfully completed\n");
-        else        sb.append("previously requested transmission is not yet completed\n");
+        if (tcs)    sb.append("last requested transmission has been successfully completed" + Util.LS);
+        else        sb.append("previously requested transmission is not yet completed" + Util.LS);
 
         sb.append("Transmit buffer status:       ");
-        if (tbs)    sb.append("released\n");
-        else        sb.append("locked\n");
+        if (tbs)    sb.append("released" + Util.LS);
+        else        sb.append("locked" + Util.LS);
 
         sb.append("Data overrun status:          ");
-        if (dos)    sb.append("overrun\n");
-        else        sb.append("ok, no overrun\n");
+        if (dos)    sb.append("overrun" + Util.LS);
+        else        sb.append("ok, no overrun" + Util.LS);
 
         sb.append("Receive buffer status:        ");
-        if (rbs)    sb.append("full\n");
-        else        sb.append("empty\n");
+        if (rbs)    sb.append("full" + Util.LS);
+        else        sb.append("empty" + Util.LS);
 
         return sb.toString();
     }

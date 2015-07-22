@@ -21,6 +21,8 @@ package easyfpga.generator.model.cores;
 
 import java.util.Arrays;
 
+import easyfpga.Util;
+
 /**
  * A CAN bus frame or message
  */
@@ -224,7 +226,7 @@ public class CANFrame {
             sb.append("<-- BASIC CAN MESSAGE (id = ");
             sb.append(String.format("0x%03X", identifier));
         }
-        sb.append(") -->\n");
+        sb.append(") -->" + Util.LS);
 
         /* descriptors */
         String descr0 = Integer.toBinaryString(descriptor[0] | 0x100).substring(1);
@@ -235,17 +237,17 @@ public class CANFrame {
             descr2 = Integer.toBinaryString(descriptor[2] | 0x100).substring(1);
             descr3 = Integer.toBinaryString(descriptor[3] | 0x100).substring(1);
         }
-        sb.append("Descriptor 1: 0b" + descr0 + "\n");
-        sb.append("Descriptor 2: 0b" + descr1 + "\n");
+        sb.append("Descriptor 1: 0b" + descr0 + Util.LS);
+        sb.append("Descriptor 2: 0b" + descr1 + Util.LS);
         if (isExtended) {
-            sb.append("Descriptor 3: 0b" + descr2 + "\n");
-            sb.append("Descriptor 4: 0b" + descr3 + "\n");
+            sb.append("Descriptor 3: 0b" + descr2 + Util.LS);
+            sb.append("Descriptor 4: 0b" + descr3 + Util.LS);
         }
 
         /* data */
         if (dataLength == 0) sb.append("RTR frame - no data");
         for (int i = 0; i < dataLength; i++) {
-            sb.append("      Data " + (i+1) + ": 0x" + String.format("%02X", data[i]) + "\n");
+            sb.append("      Data " + (i+1) + ": 0x" + String.format("%02X", data[i]) + Util.LS);
         }
 
         return sb.toString();

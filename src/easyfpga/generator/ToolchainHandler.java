@@ -323,13 +323,12 @@ public class ToolchainHandler {
     }
 
     private void print(String message) {
-        String ls = System.getProperty("line.separator");
         String bar = "*************************************"
-                   + "*************************************" + ls;
+                   + "*************************************" + Util.LS;
         String prefix = "*** TOOLCHAIN HANDLER: ";
 
-        String msg = prefix + message + ls;
-        String verboseMsg = bar + prefix + message + ls + bar;
+        String msg = prefix + message + Util.LS;
+        String verboseMsg = bar + prefix + message + Util.LS + bar;
 
         System.out.print(verbose ? verboseMsg : msg);
         buildLogBuilder.append(verboseMsg);

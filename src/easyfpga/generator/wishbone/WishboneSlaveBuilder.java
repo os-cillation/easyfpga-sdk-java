@@ -21,6 +21,8 @@ package easyfpga.generator.wishbone;
 
 import java.util.Scanner;
 
+import easyfpga.Util;
+
 /**
  * Class for generating wishbone slaves
  *
@@ -85,15 +87,15 @@ public class WishboneSlaveBuilder {
 
             /* replace arbitrary unique identifiers */
             if (line.contains("%wbs_package_name")) {
-                buffer.append(line.replaceAll("%wbs_package_name", packageName) + "\n");
+                buffer.append(line.replaceAll("%wbs_package_name", packageName) + Util.LS);
                 continue;
             }
             if (line.contains("%wbs_component_name")) {
-                buffer.append(line.replaceAll("%wbs_component_name", componentName) + "\n");
+                buffer.append(line.replaceAll("%wbs_component_name", componentName) + Util.LS);
                 continue;
             }
             if (line.contains("%wbs_reg_type")) {
-                buffer.append(line.replaceAll("%wbs_reg_type", registerTypeName) + "\n");
+                buffer.append(line.replaceAll("%wbs_reg_type", registerTypeName) + Util.LS);
                 continue;
             }
 
@@ -164,7 +166,7 @@ public class WishboneSlaveBuilder {
             }
 
             /* no matches, just append the line */
-            buffer.append(String.format("%s\n", line));
+            buffer.append(String.format("%s%n", line));
         }
 
         scanner.close();
@@ -188,13 +190,14 @@ public class WishboneSlaveBuilder {
 
     private void buildRegisterTypeDefinitions(StringBuffer buffer) {
         for (String regName : registerNames) {
-            buffer.append("      " + regName + " : std_logic_vector(WB_DW-1 downto 0);\n");
+            buffer.append("      " + regName + " : std_logic_vector(WB_DW-1 downto 0);" + Util.LS);
         }
     }
 
     private void buildRegisterOutputDefinitions(StringBuffer buffer) {
         for (String regName : registerNames) {
-            buffer.append("         " + regName + "_out : out std_logic_vector(WB_DW-1 downto 0);\n");
+            buffer.append("         " + regName + "_out : out std_logic_vector(WB_DW-1 downto 0);"
+                          + Util.LS);
         }
     }
 
@@ -204,7 +207,7 @@ public class WishboneSlaveBuilder {
             buffer.append("   constant " + registerNames[address].toUpperCase());
             buffer.append("_ADR : std_logic_vector(WB_REG_AW-1 downto 0) := x\"");
             buffer.append(String.format("%02X", address));
-            buffer.append("\";\n");
+            buffer.append("\";" + Util.LS);
         }
     }
 
@@ -218,7 +221,7 @@ public class WishboneSlaveBuilder {
             }
             buffer.append(" ");
         }
-        buffer.append(": std_logic;\n");
+        buffer.append(": std_logic;" + Util.LS);
 
         /* register enable signals */
         buffer.append("   signal ");
@@ -229,56 +232,57 @@ public class WishboneSlaveBuilder {
             }
             buffer.append(" ");
         }
-        buffer.append(": std_logic;\n");
+        buffer.append(": std_logic;" + Util.LS);
     }
 
     private void buildAddressComparators(StringBuffer buffer) {
         for (String regName : registerNames) {
             buffer.append(regName + "_adr_match_s <= '1' when wbs_in.adr = ");
-            buffer.append(regName.toUpperCase() + "_ADR else '0';\n");
+            buffer.append(regName.toUpperCase() + "_ADR else '0';" + Util.LS);
         }
     }
 
     private void buildRegisterEnables(StringBuffer buffer) {
         for (String regName : registerNames) {
             buffer.append(regName + "_re_s <= wbs_in.stb AND wbs_in.we AND ");
-            buffer.append(regName + "_adr_match_s;\n");
+            buffer.append(regName + "_adr_match_s;" + Util.LS);
         }
     }
 
     private void buildRegisterInputs(StringBuffer buffer) {
         for (String regName : registerNames) {
-            buffer.append("reg_in_s." + regName + " <= wbs_in.dat;\n");
+            buffer.append("reg_in_s." + regName + " <= wbs_in.dat;" + Util.LS);
         }
     }
 
     private void buildRegisterOutDemux(StringBuffer buffer) {
-        buffer.append("with wbs_in.adr select\n");
+        buffer.append("with wbs_in.adr select" + Util.LS);
         buffer.append("   wbs_out.dat <= ");
         for (String regName : registerNames) {
             buffer.append("reg_out_s." + regName + "   when ");
-            buffer.append(regName.toUpperCase() + "_ADR,\n                  ");
+            buffer.append(regName.toUpperCase() + "_ADR," + Util.LS + "                  ");
         }
-        buffer.append("(others => '-')  when others;\n");
+        buffer.append("(others => '-')  when others;" + Util.LS);
     }
 
     private void buildRegisterOutputConnections(StringBuffer buffer) {
         for (String regName : registerNames) {
-            buffer.append(regName + "_out <= reg_out_s." + regName + ";\n");
+            buffer.append(regName + "_out <= reg_out_s." + regName + ";" + Util.LS);
         }
     }
 
     private void buildRegisterResetAssignments(StringBuffer buffer) {
         for (String regName : registerNames) {
-            buffer.append("            reg_out_s." + regName + " <= (others => '0');\n");
+            buffer.append("            reg_out_s." + regName + " <= (others => '0');" + Util.LS);
         }
     }
 
     private void buildRegisterStoreConditions(StringBuffer buffer) {
         for (String regName : registerNames) {
-            buffer.append("         -- store " + regName + "\n");
-            buffer.append("         elsif(" + regName + "_re_s = '1') then\n");
-            buffer.append("            reg_out_s." + regName + " <= reg_in_s." + regName + ";\n\n");
+            buffer.append("         -- store " + regName + Util.LS);
+            buffer.append("         elsif(" + regName + "_re_s = '1') then" + Util.LS);
+            buffer.append("            reg_out_s." + regName + " <= reg_in_s." + regName + ";"
+                          + Util.LS + Util.LS);
         }
     }
 

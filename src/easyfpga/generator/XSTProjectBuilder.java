@@ -58,7 +58,7 @@ public class XSTProjectBuilder {
                 buildCores(builder);
                 continue;
             }
-            builder.append(String.format("%s\n", line));
+            builder.append(String.format("%s%n", line));
         }
         scanner.close();
         return builder.toString();
@@ -70,7 +70,7 @@ public class XSTProjectBuilder {
             if (!classes.contains(component.getClass())) {
                 classes.add(component.getClass());
                 addCore(builder, component);
-                builder.append("\n");
+                builder.append(Util.LS);
             }
         }
     }
@@ -99,7 +99,7 @@ public class XSTProjectBuilder {
                     throw new BuildException("Failed to determine path of external source file. "
                             + "Please check permissions.");
                 }
-                builder.append(String.format("%s %s \"%s\"\n",
+                builder.append(String.format("%s %s \"%s\"%n",
                                             language, HDL_LIBRARY_NAME, filePath));
             }
         }
@@ -110,7 +110,7 @@ public class XSTProjectBuilder {
         Scanner scanner = new Scanner(XSTProjectBuilder.class.getResourceAsStream(componentProject));
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            builder.append(String.format("%s\n", line));
+            builder.append(String.format("%s%n", line));
         }
         scanner.close();
     }

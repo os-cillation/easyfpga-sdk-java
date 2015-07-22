@@ -47,7 +47,7 @@ public class XSTScriptBuilder {
         while(scanner.hasNextLine()) {
             String line = scanner.nextLine();
             line = line.replaceAll("%tle_name", tle_name);
-            builder.append(String.format("%s\n", line));
+            builder.append(String.format("%s%n", line));
         }
 
         scanner.close();

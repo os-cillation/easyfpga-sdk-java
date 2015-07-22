@@ -129,7 +129,7 @@ public class ConfigurationFile {
     private void createDefault() {
 
         /* build configuration file string */
-        String ls = System.getProperty("line.separator");
+        String ls = Util.LS;
         StringBuilder sb = new StringBuilder();
         sb.append("###############################" + ls);
         sb.append("# easyFPGA configuration file #" + ls);

@@ -101,7 +101,7 @@ public class EasyFPGAAnnotationProcessor extends AbstractProcessor {
             if (line.contains("%myfpga")) {
                 line = line.replaceAll("%myfpga", typeQualifiedName);
             }
-            buffer.append(String.format("%s\n", line));
+            buffer.append(String.format("%s%n", line));
         }
         scanner.close();
         return buffer.toString();

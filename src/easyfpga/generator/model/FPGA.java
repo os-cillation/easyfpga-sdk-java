@@ -459,8 +459,8 @@ public abstract class FPGA extends Component {
 
     @Override
     public String toString() {
-        return "FPGA(" + hashCode() + ")\n" +
-                "components = " + components + "\n" +
+        return "FPGA(" + hashCode() + ")" + Util.LS +
+                "components = " + components + Util.LS +
                 "connectionMap = " + connections;
     }
 
@@ -489,7 +489,7 @@ public abstract class FPGA extends Component {
 
             sb.append(con.getSignalName() + ": ");
             sb.append(src + " -> " + sinks.toString());
-            sb.append("\n");
+            sb.append(Util.LS);
         }
         return sb.toString();
     }

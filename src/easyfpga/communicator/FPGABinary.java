@@ -385,16 +385,16 @@ public class FPGABinary extends Observable {
      * @return filename, size and content as hexadecimal strings
      */
     public String toString() {
-        String output = "<==   C O N F I G U R A T I O N   F I L E   ==>\n";
-        output += "Filename:             " + this.filename + "\n";
-        output += "Start Sector ID:      " + this.startSectorID + "\n";
-        output += "Size:                 " + this.size + " bytes\n";
+        String output = "<==   C O N F I G U R A T I O N   F I L E   ==>" + Util.LS;
+        output += "Filename:             " + this.filename + Util.LS;
+        output += "Start Sector ID:      " + this.startSectorID + Util.LS;
+        output += "Size:                 " + this.size + " bytes" + Util.LS;
         output += "Hashcode:             " +
                 String.format("0x%8s", Integer.toHexString(this.hashcode)).replace(' ', '0')
-                + "\n";
+                + Util.LS;
 
-        output += "socUploaded to Flash: " + this.socUploaded + "\n";
-        output += "socVerified:          " + this.socVerified + "\n\n";
+        output += "socUploaded to Flash: " + this.socUploaded + Util.LS;
+        output += "socVerified:          " + this.socVerified + Util.LS + Util.LS;
 
         return output;
     }

@@ -22,6 +22,7 @@ package easyfpga.generator.wishbone;
 import java.util.Iterator;
 import java.util.Scanner;
 
+import easyfpga.Util;
 import easyfpga.generator.model.Component;
 import easyfpga.generator.model.FPGA;
 
@@ -90,7 +91,7 @@ public class InterconBuilder {
                 buildIRQGates(buffer);
                 continue;
             }
-            buffer.append(String.format("%s\n", line));
+            buffer.append(String.format("%s%n", line));
         }
         scanner.close();
         return buffer.toString();
@@ -99,10 +100,10 @@ public class InterconBuilder {
     private void buildWishboneSlaves(StringBuffer buffer) {
         for (Iterator<Component> iterator = fpga.getComponents().iterator(); iterator.hasNext();) {
             Component component = iterator.next();
-            buffer.append(String.format("      wbs%d_out\t: in wbs_out_type;\n", component.getIndex()));
+            buffer.append(String.format("      wbs%d_out\t: in wbs_out_type;%n", component.getIndex()));
             buffer.append(String.format("      wbs%d_in\t: out wbs_in_type", component.getIndex()));
             if (iterator.hasNext()) {
-                buffer.append(";\n");
+                buffer.append(";" + Util.LS);
             }
         }
     }
@@ -111,49 +112,51 @@ public class InterconBuilder {
         for (Component component : fpga.getComponents()) {
             String hexString = String.format("%02X", component.getIndex());
             buffer.append(String.format("   constant WBS%d_ADR : std_logic_vector"
-                    + "(WB_CORE_AW-1 downto 0) := x\"%s\";\n", component.getIndex(), hexString));
+                    + "(WB_CORE_AW-1 downto 0) := x\"%s\";%n", component.getIndex(), hexString));
         }
     }
 
     private void buildSignals(StringBuffer buffer) {
         for (Component component : fpga.getComponents()) {
-            buffer.append(String.format("   signal adr_match_%d_s : std_logic;\n", component.getIndex()));
+            buffer.append(String.format("   signal adr_match_%d_s : std_logic;%n", component.getIndex()));
         }
     }
 
     private void buildCommonSignals(StringBuffer buffer) {
-        StringBuffer dat = new StringBuffer("   -- dat\n");
-        StringBuffer adr = new StringBuffer("\n   -- adr\n");
-        StringBuffer we = new StringBuffer("\n   -- we\n");
-        StringBuffer cyc = new StringBuffer("\n   -- cyc\n");
-        StringBuffer clk = new StringBuffer("\n   -- clk (wbm as well)\n");
-        StringBuffer rst = new StringBuffer("\n   -- rst\n");
+        StringBuffer dat = new StringBuffer("   -- dat" + Util.LS);
+        StringBuffer adr = new StringBuffer(Util.LS + "   -- adr" + Util.LS);
+        StringBuffer we = new StringBuffer(Util.LS + "   -- we" + Util.LS);
+        StringBuffer cyc = new StringBuffer(Util.LS + "   -- cyc" + Util.LS);
+        StringBuffer clk = new StringBuffer(Util.LS + "   -- clk (wbm as well)" + Util.LS);
+        StringBuffer rst = new StringBuffer(Util.LS + "   -- rst" + Util.LS);
 
         for (Component component : fpga.getComponents()) {
             int index = component.getIndex();
-            dat.append(String.format("   wbs%d_in.dat <= wbm_out.dat;\n", index)); // dat
-            adr.append(String.format("   wbs%d_in.adr <= reg_adr_s;\n", index)); // adr
-            we.append(String.format("   wbs%d_in.we  <= wbm_out.we;\n", index)); // we
-            cyc.append(String.format("   wbs%d_in.cyc <= wbm_out.cyc;\n", index)); // cyc
-            clk.append(String.format("   wbs%d_in.clk <= clk_in;\n", index)); // clk
-            rst.append(String.format("   wbs%d_in.rst <= rst_in;\n", index)); // rst
+            dat.append(String.format("   wbs%d_in.dat <= wbm_out.dat;%n", index)); // dat
+            adr.append(String.format("   wbs%d_in.adr <= reg_adr_s;%n", index)); // adr
+            we.append(String.format("   wbs%d_in.we  <= wbm_out.we;%n", index)); // we
+            cyc.append(String.format("   wbs%d_in.cyc <= wbm_out.cyc;%n", index)); // cyc
+            clk.append(String.format("   wbs%d_in.clk <= clk_in;%n", index)); // clk
+            rst.append(String.format("   wbs%d_in.rst <= rst_in;%n", index)); // rst
         }
-        clk.append("   wbm_in.clk <= clk_in;\n");
+        clk.append("   wbm_in.clk <= clk_in;" + Util.LS);
 
-        buffer.append(dat.toString() + adr + we + cyc + clk + rst + "\n");
+        buffer.append(dat.toString() + adr + we + cyc + clk + rst + Util.LS);
     }
 
     private void buildDRDMultiplexer(StringBuffer buffer) {
-        buffer.append("   with core_adr_s select wbm_in.dat  <= \n");
+        buffer.append("   with core_adr_s select wbm_in.dat  <= " + Util.LS);
         for (Component component : fpga.getComponents()) {
-            buffer.append(String.format("      wbs%1$d_out.dat when WBS%1$d_ADR,\n", component.getIndex()));
+            buffer.append(String.format("      wbs%1$d_out.dat when WBS%1$d_ADR,%n",
+                    component.getIndex()));
         }
-        buffer.append("      (others => '-') when others;\n");
+        buffer.append("      (others => '-') when others;" + Util.LS);
     }
 
     private void buildAdressComparator(StringBuffer buffer) {
         for (Component component : fpga.getComponents()) {
-            buffer.append(String.format("   adr_match_%1$d_s <= '1' when core_adr_s = WBS%1$d_ADR else '0';\n", component.getIndex()));
+            buffer.append(String.format("   adr_match_%1$d_s <= '1' when core_adr_s = WBS%1$d_ADR else '0';%n",
+                    component.getIndex()));
         }
     }
 
@@ -163,16 +166,16 @@ public class InterconBuilder {
             Component component = iterator.next();
             buffer.append(String.format("wbs%d_out.ack", component.getIndex()));
             if (iterator.hasNext()) {
-                buffer.append(" OR\n      ");
+                buffer.append(" OR" + Util.LS + "      ");
             } else {
-                buffer.append(";\n");
+                buffer.append(";" + Util.LS);
             }
         }
     }
 
     private void buildSTBAndGates(StringBuffer buffer) {
         for (Component component : fpga.getComponents()) {
-            buffer.append(String.format("   wbs%1$d_in.stb <= wbm_out.cyc AND wbm_out.stb AND adr_match_%1$d_s;\n", component.getIndex()));
+            buffer.append(String.format("   wbs%1$d_in.stb <= wbm_out.cyc AND wbm_out.stb AND adr_match_%1$d_s;%n", component.getIndex()));
         }
     }
 
@@ -185,22 +188,24 @@ public class InterconBuilder {
             if (iterator.hasNext()) {
                 buffer.append(", ");
             } else {
-                buffer.append(")\n\n");
+                buffer.append(")" + Util.LS + Util.LS);
             }
         }
 
-        buffer.append("\tbegin \n\t\tif ");
+        buffer.append("\tbegin " + Util.LS + "\t\tif ");
         for (Iterator<Component> iterator = fpga.getComponents().iterator(); iterator.hasNext();) {
             Component component = iterator.next();
-            buffer.append(String.format("wbs%1$d_out.irq = '1' then wbm_in.int_adr <= WBS%1$d_ADR;\n\t", component.getIndex()));
+            buffer.append(String.format("wbs%1$d_out.irq = '1' then wbm_in.int_adr <= WBS%1$d_ADR;%n\t",
+                    component.getIndex()));
 
             if (iterator.hasNext()) {
                 buffer.append("\telsif ");
             } else {
-                buffer.append("\telse wbm_in.int_adr <= (others => '-'); \n\t\tend if;\n");
+                buffer.append("\telse wbm_in.int_adr <= (others => '-'); " + Util.LS +
+                              "\t\tend if;" + Util.LS);
             }
         }
-        buffer.append("\tend process IRQ_DEC;\n");
+        buffer.append("\tend process IRQ_DEC;" + Util.LS);
     }
 
     private void buildIRQGates(StringBuffer buffer) {
@@ -209,9 +214,9 @@ public class InterconBuilder {
             Component component = iterator.next();
             buffer.append(String.format("wbs%d_out.irq", component.getIndex()));
             if (iterator.hasNext()) {
-                buffer.append(" OR\n      ");
+                buffer.append(" OR" + Util.LS + "      ");
             } else {
-                buffer.append(";\n");
+                buffer.append(";" + Util.LS);
             }
         }
     }

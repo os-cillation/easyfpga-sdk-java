@@ -43,6 +43,12 @@ import java.util.logging.LogManager;
  */
 public final class Util {
 
+    /** system-dependent file separator */
+    public static final String FS = System.getProperty("file.separator");
+
+    /** system-dependent line separator */
+    public static final String LS = System.getProperty("line.separator");
+
     private static final String EASY_FPGA_FOLDER = ".easyFPGA";
     private static final String LOGGING_FOLDER = "log";
 
@@ -54,12 +60,11 @@ public final class Util {
      */
     public static File getEasyFPGAFolder() {
         String userHome = System.getProperty("user.home");
-        String fileSeparator = System.getProperty("file.separator");
         String tmpFolder = System.getProperty("java.io.tmpdir");
 
         String rootFolderName = new File(userHome).canWrite() ? userHome : tmpFolder;
         File rootFolder = new File(rootFolderName);
-        File folder = new File(rootFolder, EASY_FPGA_FOLDER + fileSeparator);
+        File folder = new File(rootFolder, EASY_FPGA_FOLDER + FS);
         return folder;
     }
 
@@ -212,7 +217,7 @@ public final class Util {
 
         while (line != null) {
             sb.append(line);
-            sb.append("\n");
+            sb.append(LS);
             line = reader.readLine();
         }
         String fileString = sb.toString();
@@ -234,7 +239,7 @@ public final class Util {
         }
         catch (FileNotFoundException e) {
             System.err.println("WARNING: No logging properties found at "
-                                + getLoggingPropertiesPath() + "\n" +
+                                + getLoggingPropertiesPath() + LS +
                                "         Will use default logging.properties");
             return;
         }
@@ -254,8 +259,8 @@ public final class Util {
      */
     public static void prepareLogging() {
         /* create log directory if necessary */
-        String logDirPath = System.getProperty("user.home") + File.separator + EASY_FPGA_FOLDER
-                          + File.separator + LOGGING_FOLDER;
+        String logDirPath = System.getProperty("user.home") + FS + EASY_FPGA_FOLDER + FS
+                          + LOGGING_FOLDER;
         File logDir = new File(logDirPath);
         if (!logDir.exists()) {
             if (logDir.mkdirs()) {
@@ -281,8 +286,8 @@ public final class Util {
     }
 
     private static String getLoggingPropertiesPath() {
-        String propertiesPath = System.getProperty("user.home") + File.separator + EASY_FPGA_FOLDER
-                + File.separator + "logging.properties";
+        String propertiesPath = System.getProperty("user.home") + FS + EASY_FPGA_FOLDER + FS
+                              + "logging.properties";
         return propertiesPath;
     }
 }
