@@ -30,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import easyfpga.Util;
 import easyfpga.exceptions.CommunicationException;
 import easyfpga.generator.model.FPGA;
 
@@ -141,7 +142,7 @@ public class Communicator {
 
         /* exception if there are still pendingReplies */
         if (!pendingExchanges.isEmpty()) {
-            LOGGER.warning("Pending transmissions while closing connection:\n" +
+            LOGGER.warning("Pending transmissions while closing connection:" + Util.LS +
                                        getStatusString());
         }
 
@@ -733,10 +734,10 @@ public class Communicator {
      * @return a string containing communicator status information
      */
     public String getStatusString() {
-        return "<---- COMMUNICATOR STATUS ---->\n" +
-                "       Receive Buffer: " + getReceiveBufferString() + "\n" +
-                "      Received Frames: " + getFramesString() + "\n" +
-                "      Pending replies: " + getRepliesString() + "\n" +
+        return "<---- COMMUNICATOR STATUS ---->" + Util.LS +
+                "       Receive Buffer: " + getReceiveBufferString() + Util.LS +
+                "      Received Frames: " + getFramesString() + Util.LS +
+                "      Pending replies: " + getRepliesString() + Util.LS +
                 "          idGenerator: " + idGenerator.toString();
     }
 

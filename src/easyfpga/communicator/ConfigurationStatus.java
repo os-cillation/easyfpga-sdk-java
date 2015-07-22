@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import easyfpga.Util;
+
 /**
  * Represents the current configuration status stored in the application flash memory. Used to
  * get the hash of the FPGA binary and check whether the FPGA is already configured.

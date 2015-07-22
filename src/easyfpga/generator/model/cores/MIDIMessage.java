@@ -19,7 +19,7 @@
 
 package easyfpga.generator.model.cores;
 
-import easyfpga.communicator.Util;
+import easyfpga.Util;
 
 /**
  * Representation of MIDI messages

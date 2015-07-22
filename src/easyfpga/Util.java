@@ -290,4 +290,24 @@ public final class Util {
                               + "logging.properties";
         return propertiesPath;
     }
+
+    public static String toHexString(int n) {
+        return String.format("0x%8s", Integer.toHexString(n)).replace(' ', '0').toUpperCase();
+    }
+
+    public static String toHexString(byte[] byteStream) {
+        String output = "";
+        for (byte b : byteStream) {
+            output += String.format("%02X ", b);
+        }
+        return output;
+    }
+
+    public static String toHexString(int[] byteStream) {
+        String output = "";
+        for (int i : byteStream) {
+            output += String.format("%02X ", i & 0xFF);
+        }
+        return output;
+    }
 }
