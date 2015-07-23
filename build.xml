@@ -9,7 +9,7 @@
 	<property name="build.dir" location="bin" />
 	<property name="dist.dir" location="dist" />
 	<property name="soc.dir" location="${build.dir}/soc" />
-	<property name="soc-sources.dir" location="../easyfpga-soc" />
+	<property name="soc-sources.dir" location="soc" />
 	<property name="javadoc.dir" location="javadoc" />
 	<property name="jssc.dir" location="src/jssc" />
 
