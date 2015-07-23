@@ -30,11 +30,14 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Global SDK configuration file located in /home/userName/.config
  */
 public class ConfigurationFile {
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigurationFile.class.getName());
 
     private final String CONFIG_NAME = "easyfpga.conf";
     private final String homeDir;
@@ -43,6 +46,8 @@ public class ConfigurationFile {
     private Properties configuration;
     InputStream inStream;
     OutputStream outStream;
+
+    private final OSType os;
 
     /* keys names */
 
@@ -65,6 +70,19 @@ public class ConfigurationFile {
         /* get configuration path */
         homeDir = System.getProperty("user.home");
         configPath = homeDir + File.separator + ".config" + File.separator + CONFIG_NAME;
+
+        /* determine operating system */
+        String osName = System.getProperty("os.name");
+        if (osName.equals("Linux")) {
+            os = OSType.LINUX;
+        } else if (osName.startsWith("Win")) {
+            os = OSType.WINDOWS;
+        } else {
+            os = OSType.UNKNOWN;
+            System.err.println("ERROR: Unsupported operating system: " +
+                        System.getProperty("os.name"));
+            LOGGER.severe("Running on unsupported operting system");
+        }
 
         /* load file or create default configuration */
         load();
@@ -136,15 +154,28 @@ public class ConfigurationFile {
         sb.append("###############################" + ls + ls);
 
         sb.append("# Location of Xilinx toolchain binaries" + ls);
-        sb.append(XILINX_DIR_KEY + " = /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64" + ls + ls);
+        if (os == OSType.LINUX) {
+            sb.append(XILINX_DIR_KEY + " = /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64" + ls + ls);
+        } else if (os == OSType.WINDOWS) {
+            sb.append(XILINX_DIR_KEY + " = C:\\Xilinx\\14.7\\ISE_DS\\ISE\\bin\\nt64" + ls + ls);
+        }
 
         sb.append("# Default USB device the board is connected to. If commented out, easyFPGA" + ls);
-        sb.append("# will use /dev/ttyUSBn with the lowest n found." + ls);
-        sb.append("#" + USB_DEVICE_KEY + " = /dev/ttyUSB0" + ls + ls);
+        if (os == OSType.LINUX) {
+            sb.append("# will use /dev/ttyUSBn with the lowest n found." + ls);
+            sb.append("#" + USB_DEVICE_KEY + " = /dev/ttyUSB0" + ls + ls);
+        } else if (os == OSType.WINDOWS) {
+            sb.append("# will use COMn with the lowest n found." + ls);
+            sb.append("#" + USB_DEVICE_KEY + " = COM0" + ls + ls);
+        }
 
         sb.append("# For using the CAN bus controller core, you have to download the sources" + ls);
         sb.append("# from opencores.com and copy them to a location of your choice:" + ls);
-        sb.append("#" + CAN_SOURCES_KEY + " = /absolute/path/to/sources" + ls + ls);
+        if (os == OSType.LINUX) {
+            sb.append("#" + CAN_SOURCES_KEY + " = /absolute/path/to/sources" + ls + ls);
+        } else if (os == OSType.WINDOWS) {
+            sb.append("#" + CAN_SOURCES_KEY + " = C:\\absolute\\path\\to\\sources" + ls + ls);
+        }
 
         sb.append("# Uncomment to show entire output of FPGA toolchain during build" + ls);
         sb.append("#" + BUILD_VERBOSE_KEY + " = TRUE");
@@ -190,5 +221,9 @@ public class ConfigurationFile {
      */
     public String getValue(String key) {
         return configuration.getProperty(key);
+    }
+
+    private enum OSType {
+        LINUX, WINDOWS, UNKNOWN
     }
 }
