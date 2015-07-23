@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import jssc.SerialPortList;
+import easyfpga.Util;
 import easyfpga.exceptions.CommunicationException;
 import easyfpga.exceptions.CurrentlyConfiguringException;
 
@@ -44,6 +45,11 @@ public class DeviceDetector extends Observable {
     /** regular expression to choose devices to test */
     private final String DEVICE_PATH_REGEX = "(ttyUSB\\d+)|(COM\\d+)";
 
+    /** message to print to system.err when no device gets detected */
+    private final String NO_DEVICE_MSG =
+            "ERROR: No device has been detected. Please make sure that an easyFPGA board is" + Util.LS +
+            "attached and you have the permission to connect to it." + Util.LS;
+
     private final static Logger LOGGER = Logger.getLogger(DeviceDetector.class.getName());
 
     /**
@@ -57,7 +63,10 @@ public class DeviceDetector extends Observable {
         Map<String, Integer> deviceMap = findCommunicatingBoards();
 
         /* return first entry of null if empty */
-        if (deviceMap.isEmpty()) return null;
+        if (deviceMap.isEmpty()) {
+            System.err.println(NO_DEVICE_MSG);
+            return null;
+        }
         else {
             Object[] devicesArray = deviceMap.keySet().toArray();
             return (String) devicesArray[0];
@@ -83,6 +92,7 @@ public class DeviceDetector extends Observable {
             }
         }
         /* no match */
+        System.err.println(NO_DEVICE_MSG);
         return null;
     }
 
