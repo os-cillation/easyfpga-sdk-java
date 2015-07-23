@@ -221,6 +221,52 @@ public class VirtualComPort implements SerialPortEventListener {
     }
 
     /**
+     * Send a single byte to the VCP with given timeout.
+     * Used for device detecting, since when running on Windows sending bytes may time out.
+     *
+     * @param b byte to send
+     * @param timeoutMillis timeout in milliseconds
+     * @throws TimeoutException when timeout elapses
+     */
+    public void send(byte b, long timeoutMillis) throws TimeoutException {
+
+        /* prepare executor service, callable and future */
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        class SendCallable implements Callable<Object> {
+            byte sendByte;
+            public SendCallable(byte sendByte) {
+                this.sendByte = sendByte;
+            }
+
+            public Object call() throws Exception {
+                send(sendByte);
+                return null;
+            }
+        };
+
+        SendCallable sendCallable = new SendCallable(b);
+        Future<Object> future = executor.submit(sendCallable);
+
+        /* receive */
+        try {
+            future.get(timeoutMillis, TimeUnit.MILLISECONDS);
+        }
+        catch (TimeoutException e) {
+            LOGGER.fine(String.format("Timeout (%d ms) while sending single byte",
+                                       timeoutMillis));
+            throw e;
+        }
+        catch (InterruptedException ignored) {}
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        finally {
+            future.cancel(true);
+        }
+    }
+
+    /**
      * Send a frame instance over the VCP
      *
      * @param frame to send

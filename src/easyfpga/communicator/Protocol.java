@@ -94,12 +94,16 @@ public class Protocol {
     /** duration (in ms) to wait for detect reply until probing next device */
     public static final long DETECT_TIMEOUT_MILLIS = 200;
 
+    /** timeout (in ms) for sending the detect message (required on Windows) */
+    public static final long SEND_DETECT_MESSAGE_TIMEOUT_MILLIS = 500;
+
     /** timeout (in ms) for switching to MCU */
     public static final long SELECT_MCU_TIMEOUT_MILLIS = 500;
 
+    /** timeout (in ms) for reading the MCU status */
     public static final long STATUS_READ_TIMEOUT_MILLIS = 300;
 
-
+    /** timeout (in ms) for writing a sector to the non-volatile memory */
     public final static long SECTOR_WRITE_TIMEOUT_MILLIS = 500;
 
     /** timeout (in ms) for reading serial */

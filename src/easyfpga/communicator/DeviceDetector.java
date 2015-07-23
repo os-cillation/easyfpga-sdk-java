@@ -157,7 +157,8 @@ public class DeviceDetector extends Observable {
 
                 } while(configuring);
             }
-            catch (CommunicationException | TimeoutException e) {
+            catch(TimeoutException ignored) {}
+            catch (CommunicationException e) {
                 e.printStackTrace();
             }
 
@@ -197,7 +198,7 @@ public class DeviceDetector extends Observable {
         boolean parityFine = false;
         do {
             /* send detect via VCP */
-            vcp.send(Protocol.OPC_DETECT);
+            vcp.send(Protocol.OPC_DETECT, Protocol.SEND_DETECT_MESSAGE_TIMEOUT_MILLIS);
 
             /* receive with timeout */
             try {
